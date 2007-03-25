@@ -2,9 +2,17 @@ package jlo.ioe.ui;
 
 import javax.swing.JButton
 import javax.swing.JComponent
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
+import scala.actors._
 
-class Button(text:String) extends JButton(text) with Component[Button] {
-  type C = Button
-  theComponent = this
-  
+case class Pressed extends ObservableEvent
+
+class Button(var text:String) extends JButton(text) with Component {
+  addActionListener(new ActionListener {
+    def actionPerformed(e:ActionEvent) {
+      Console.println("ap")
+      fire(Pressed())
+    }
+  })
 }
