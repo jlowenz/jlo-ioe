@@ -14,6 +14,20 @@ import java.awt.event._
 import scala.actors._
 import jlo.ioe.ui._
 import jlo.ioe.ui.Panel
+import jlo.ioe.command._
+import scala.List
+
+object Test {
+  def main(args : Array[String]) : Unit = {
+    val t = new Trie[String]
+    var l = List[String]("Jason", "Josh", "Jean", "Jeannie", "Jeff", "Nettie")
+    l.foreach { name => t.insert(name,name,name) }
+    Console.println("j  : " + t.retrieve("j"))
+    Console.println("je : " + t.retrieve("je"))
+    Console.println("jea: " + t.retrieve("jea"))
+    Console.println("n  : " + t.retrieve("n"))
+  }
+}
 
 object Environment {
   UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName())
@@ -22,6 +36,8 @@ object Environment {
 
   def main(args : Array[String]) : unit = {
     Console.println("Hello World!")
+    Console.println("" + (Character.digit('a',26)-10))
+    Console.println("" + new Trie[Object]().charToIndex('Z'))
   }
 }
 
