@@ -14,6 +14,7 @@ import javax.swing.event._
 import scala.compat._
 import jlo.ioe.ui.TextField
 import jlo.ioe.ui._
+import jlo.ioe.command._
 
 object CommandInterface extends Observer {
   val commandField  = new TextField() with behavior.KeyTracker {
@@ -88,14 +89,42 @@ object CommandInterface extends Observer {
     }
     case behavior.Ancestor(_,_) => {} // ignore the other cases
   }
+
+  var currentCommand : Option[Command] = None
   listenTo(commandField) event {
     case behavior.Action(_) => component.commandRequested
-    case behavior.Key(e) => behavior.KeyTracker.keyToString(e) match { 
-      case "Escape" => component.commandRequested 
-      case _ => {}
+    case behavior.Key(e) => e.getKeyCode() match { 
+      case KeyEvent.VK_ESCAPE => component.commandRequested
+      case KeyEvent.VK_SPACE => currentCommand.foreach {c => c.termCompleted(suggestionMatches)}
+      case KeyEvent.VK_TAB => selectSuggestedValue
+      case _ => {
+	val lastFragment = commandField.getText().split(" ").toList.last
+	updateSuggestions(lastFragment)
+	currentCommand match {
+	  case Some(c) => c.updateFragment(lastFragment)
+	  case None => {
+	    currentCommand = Some(new Command)
+	    currentCommand.get.updateFragment(commandField.getText())
+	  }
+	}
+	Console.println("Command: " + currentCommand)
+      }
     }
   }
+
+  private def suggestionMatches = {
+    val lastFragment = commandField.getText().split(" ").toList.last
+    List[VocabularyTerm]()
+  }
   
+  private def updateSuggestions(frag:String) = {
+    
+  }
+
+  private def selectSuggestedValue = {
+    
+  }
+
   def level = JLayeredPane.MODAL_LAYER
   def component = commandPanel
 }

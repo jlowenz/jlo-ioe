@@ -4,51 +4,83 @@ import scala.actors.Actor._
 import scala.collection.jcl._
 
 trait VocabularyTerm {
+  type T <: VocabularyTerm
   val name : String
   var next : Option[VocabularyTerm] = None
   def part : CommandPart
-  def accepts : List[VocabularyTerm]
+  def synonyms : List[String]
+  def suggestions : List[VocabularyTerm]
   def attach(v : VocabularyTerm) = next = Some(v)
-  def execute
+  def execute : Option[Any]
+  def copy : T = getClass().newInstance().asInstanceOf[T]
+
+  override def toString = name + " " + next.getOrElse("").toString
 }
 
 object Vocabulary {
-  var dataTypes = List[VocabularyTerm]()
-  var dataTypeTrie = new Trie[VocabularyTerm]()
-  var verbs = List[VocabularyTerm]()
-  var verbTrie = new Trie[VocabularyTerm]()
-  
-  var vocabulary = actor {
+  val allTerms = new Trie[VocabularyTerm]()
+  val dataTypeTrie = new Trie[VocabularyTerm]()
+  val verbTrie = new Trie[VocabularyTerm]()   
+  var vocab = actor {
     loop {
       react {
-	case 'allDataTypes => reply(dataTypes)
-	case 'allVerbs => reply(verbs)
-	case Tuple2('possibleDataType,partial:String) => reply(possibleDataType(partial))
-	case Tuple2('possibleVerb,partial:String) => reply(possibleVerb(partial))
+	case Tuple2('addTerm,term:VocabularyTerm) => _addTerm(term)
+	case 'allDataTypes => reply(dataTypeTrie.getAll)
+	case 'allVerbs => reply(verbTrie.getAll)
+	case Tuple2('possibleDataType,partial:String) => reply(_possibleDataType(partial))
+	case Tuple2('possibleVerb,partial:String) => reply(_possibleVerb(partial))
       }
     }
   }
-
-  def possibleDataType(partial : String) = {
-    
+  
+  def allDataTypes = vocab !? 'allDataTypes match {
+    case l:List[VocabularyTerm] => l
+    case _ => List[VocabularyTerm]()
+  }
+  def allVerbs = vocab !? 'allVerbs match {
+    case l:List[VocabularyTerm] => l
+    case _ => List[VocabularyTerm]()
   }
 
-  def possibleVerb(partial : String) = {
-    
+  def addTerm(t:VocabularyTerm) = vocab ! Tuple('addTerm,t)  
+  private def _addTerm(t : VocabularyTerm) = {
+    allTerms.insert(t.name,t)
+    t.part match {
+      case VerbPart(n,v) => v.synonyms.foreach { s => verbTrie.insert(s,v) }
+      case DataTypePart(n,c,v) => v.synonyms.foreach { s => dataTypeTrie.insert(s,v) }
+      case _ => { Console.println("*** unhandled part: " + t) }
+    }
   }
+
+  def possibleDataType(p:String) = vocab !? Tuple('possibleDataType,p) match {
+    case l:List[VocabularyTerm] => l
+    case _ => List[VocabularyTerm]()
+  }
+  private def _possibleDataType(p:String) = dataTypeTrie.retrieve(p)
+
+  def possibleVerb(p:String) = vocab !? Tuple('possibleVerb,p) match {
+    case l:List[VocabularyTerm] => l
+    case _ => List[VocabularyTerm]()
+  }
+  private def _possibleVerb(p : String) = verbTrie.retrieve(p)
 }
 
 
 class Trie[A] {
   private val level = Array.make[Option[SubTrie[A]]](26,None)
+  private var all = List[A]()
   
-  def insert(p:String,a:String,obj:A) : Unit = {
+  def getAll = all
+
+  def insert(key:String,obj:A) : Unit = insert(key,key,obj)
+
+  private def insert(p:String,a:String,obj:A) : Unit = {
     val c = charToIndex(p.charAt(0))
     level(c) match {
-      case Some(t) => t insert(p,a,obj)
+      case Some(t) => t insert(a,obj)
       case None => {
 	level(c) = Some(new SubTrie[A])
-	level(c).get.insert(p,a,obj)
+	level(c).get.insert(a,obj)
       }
     }
   }
@@ -85,7 +117,7 @@ class SubTrie[A] extends Trie[A] {
   private var completes = List[Tuple2[String,A]]()
   private var partials = List[Tuple2[String,A]]()
   
-  override def insert(partial:String, all:String, obj:A) : Unit = {
+  def insert(partial:String, all:String, obj:A) : Unit = {
     Console.println(partial)
     Console.println("" + this + ".partials " + partials)
     Console.println("" + this + ".completes " + completes)
