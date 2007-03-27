@@ -18,8 +18,8 @@ trait KeyTracker requires Component {
   import KeyTracker._
   addKeyListener(new KeyListener {
     override def keyPressed(e:KeyEvent) : Unit = fire(Key(e))
-    override def keyReleased(e:KeyEvent) : Unit = fire(Key(e))
-    override def keyTyped(e:KeyEvent) : Unit = fire(Key(e))
+    override def keyReleased(e:KeyEvent) : Unit = {}//fire(Key(e))
+    override def keyTyped(e:KeyEvent) : Unit = {}//fire(Key(e))
   })
 
 }

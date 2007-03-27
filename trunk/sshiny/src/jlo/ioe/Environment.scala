@@ -21,7 +21,7 @@ object Test {
   def main(args : Array[String]) : Unit = {
     val t = new Trie[String]
     var l = List[String]("Jason", "Josh", "Jean", "Jeannie", "Jeff", "Nettie")
-    l.foreach { name => t.insert(name,name,name) }
+    l.foreach { name => t.insert(name,name) }
     Console.println("j  : " + t.retrieve("j"))
     Console.println("je : " + t.retrieve("je"))
     Console.println("jea: " + t.retrieve("jea"))
