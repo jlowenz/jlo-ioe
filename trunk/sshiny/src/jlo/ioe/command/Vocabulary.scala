@@ -24,7 +24,8 @@ object Vocabulary {
   var vocab = actor {
     loop {
       react {
-	case Tuple2('addTerm,term:VocabularyTerm) => _addTerm(term)
+	case Tuple2('possibleTerms,partial:String) => {Console.println("here"); reply(_possibleTerms(partial))}
+	case Tuple2('addTerm,term:VocabularyTerm) => reply(_addTerm(term))
 	case 'allDataTypes => reply(dataTypeTrie.getAll)
 	case 'allVerbs => reply(verbTrie.getAll)
 	case Tuple2('possibleDataType,partial:String) => reply(_possibleDataType(partial))
@@ -32,6 +33,12 @@ object Vocabulary {
       }
     }
   }
+  
+  def possibleTerms(p:String) : List[VocabularyTerm] = vocab !? Tuple('possibleTerms,p) match {
+    case l:List[VocabularyTerm] => l
+    case _ => List[VocabularyTerm]()
+  }
+  private def _possibleTerms(p:String) : List[VocabularyTerm] = (List.unzip(allTerms.retrieve(p)))._2
   
   def allDataTypes = vocab !? 'allDataTypes match {
     case l:List[VocabularyTerm] => l

@@ -79,6 +79,14 @@ object CommandInterface extends Observer {
       );
       commandField.requestFocusInWindow()
     }
+
+    override def setVisible(b:boolean):Unit = {
+      if (!b) {
+	Suggestions.hide
+	Suggestions.removeFrom(getParent())
+      }
+      super.setVisible(b)
+    }
   }
   
   listenTo(commandPanel) event { 
@@ -118,7 +126,16 @@ object CommandInterface extends Observer {
   }
   
   private def updateSuggestions(frag:String) = {
-    
+    Console.println("1")
+    Suggestions.showSuggestions(Vocabulary.possibleTerms(frag))
+    Console.println("2")
+    var p = new java.awt.Point
+    Console.println("3")
+    commandPanel.getLocation(p)
+    Console.println("4")
+    Suggestions.addTo(commandPanel.getParent)
+    Console.println("5")
+    Suggestions.showAt(p.getX, p.getY)    
   }
 
   private def selectSuggestedValue = {
