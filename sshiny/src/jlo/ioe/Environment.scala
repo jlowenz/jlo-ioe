@@ -16,6 +16,7 @@ import jlo.ioe.ui._
 import jlo.ioe.ui.Panel
 import jlo.ioe.command._
 import scala.List
+import javax.swing.border.LineBorder
 
 object Test {
   def main(args : Array[String]) : Unit = {
@@ -26,11 +27,17 @@ object Test {
     Console.println("je : " + t.retrieve("je"))
     Console.println("jea: " + t.retrieve("jea"))
     Console.println("n  : " + t.retrieve("n"))
+
+    Vocabulary.addTerm(new New)
+    Console.println(Vocabulary.possibleTerms("o"))
+    Console.println(Vocabulary.possibleTerms("n"))
+    
   }
 }
 
 object Environment {
-  UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName())
+//  UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName())
+  UIManager.setLookAndFeel("net.sourceforge.napkinlaf.NapkinLookAndFeel")
   Scheduler.impl = new ThreadPoolScheduler()
   val screen = new Screen(System.getProperty("user.name"))
 
@@ -43,7 +50,9 @@ object Environment {
 
 class Screen(name : String) extends JFrame("Environment: " + name) with CommandInterceptor {
   val screenDevice = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice()
-  val top = new Panel()
+  val top = new Panel() {
+    setBorder(new LineBorder(Color.gray,1))
+  }
   val center = new Panel()
   val bottom = new SheetSelector(width())
   var commandOn = false

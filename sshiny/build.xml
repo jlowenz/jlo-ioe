@@ -18,6 +18,7 @@
       <pathelement location="${scala.home}/share/scala/lib/scala-compiler.jar"/>
       <pathelement location="${scala.home}/share/scala/lib/scala-actors.jar"/>
       <pathelement location="${scala.home}/share/scala/lib/scala-dbc.jar"/>
+      <pathelement location="lib/napkinlaf.jar"/>
       <pathelement location="lib/swing-layout.jar"/>
       
       <!--<pathelement location="${your.path}"/>-->
