@@ -10,7 +10,8 @@ class New extends VocabularyTerm {
   
   override def part = VerbPart(name,this)
   
-  override def synonyms = List("new","create","make")
+  //override def synonyms = List(makeSynonym("create"), makeSynonym("make"))
+  override def synonyms = List("create","make")
 
   override def suggestions = Vocabulary.allDataTypes
 

@@ -6,10 +6,10 @@ import java.awt.Container
 import javax.swing.SwingUtilities
 
 object Suggestions {
-  val uilist = new SList[VocabularyTerm] {
+  private val uilist = new SList[VocabularyTerm] {
     orientation(SList.HORIZONTAL_WRAP)
   }
-  val ui = new Panel {
+  private val ui = new Panel {
     import javax.swing.border.EmptyBorder
     import java.awt.BorderLayout
     import java.awt.AlphaComposite
@@ -48,23 +48,37 @@ object Suggestions {
   uilist.delegateTo(model)
 
   implicit def doubleToInt(d:double):int = d.asInstanceOf[int]
-  implicit def function0ToRunnable(f:Function0[Unit]) = new Runnable { def run() { f() } }
-  
-  def showAt(x:double,y:double) = {
-    SwingUtilities.invokeLater({
-      ui.setLocation(x,y)
-      ui.setVisible(true)
-      ui.validate
-    }.asInstanceOf[Function0[Unit]])
+  implicit def toRunnable[A](f:Function0[A]) = new Runnable { def run() { f() } }
+
+  var shown = false;
+  def showAt(x:double,y:double,c:Container) = {
+    if (!shown) {
+      shown = true;
+      addTo(c)
+      SwingUtilities.invokeLater(toRunnable({
+	ui.setLocation(x,y)
+	ui.setVisible(true)
+	ui.validate
+      }))
+    }
   }
 
-  def hide = ui.setVisible(false)
+  def hide(c:Container) = { 
+    if (shown) {
+      SwingUtilities.invokeLater(toRunnable({
+	ui.setVisible(false)
+	shown = false 
+	removeFrom(c)
+	ui.validate
+      }))
+    }			       
+  }
 
   def showSuggestions(s:List[VocabularyTerm]) = {
     Console.println("showSuggestions")
     model.update(s)
   }
 
-  def removeFrom(c:Container) = c.remove(ui)
-  def addTo(c:Container) = c.add(ui)
+  private def removeFrom(c:Container) = c.remove(ui)
+  private def addTo(c:Container) = { c.add(ui) }
 }
