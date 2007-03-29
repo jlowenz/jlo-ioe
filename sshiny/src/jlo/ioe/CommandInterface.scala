@@ -17,7 +17,7 @@ import jlo.ioe.ui._
 import jlo.ioe.command._
 
 object CommandInterface extends Observer {
-  val commandField  = new TextField() with behavior.KeyTracker {
+  val commandField  = new TextField() with behavior.KeyTracker with behavior.DocumentTracker {
     actions areHandled;
     setBorder(new CompoundBorder(new LineBorder(Color.black,1),new EmptyBorder(2,2,2,2)))
     override def toString : String = "commandField"
@@ -82,8 +82,8 @@ object CommandInterface extends Observer {
 
     override def setVisible(b:boolean):Unit = {
       if (!b) {
-	Suggestions.hide
-	Suggestions.removeFrom(getParent())
+	Console.println("CommandINterface.setVisible")
+	Suggestions.hide(getParent)
       }
       super.setVisible(b)
     }
@@ -101,13 +101,11 @@ object CommandInterface extends Observer {
   var currentCommand : Option[Command] = None
   listenTo(commandField) event {
     case behavior.Action(_) => component.commandRequested
-    case behavior.Key(e) => e.getKeyCode() match { 
-      case KeyEvent.VK_ESCAPE => component.commandRequested
-      case KeyEvent.VK_SPACE => currentCommand.foreach {c => c.termCompleted(suggestionMatches)}
-      case KeyEvent.VK_TAB => selectSuggestedValue
-      case _ => {
+    case behavior.DocumentChanged(e) => {
+      Console.println("document changed")
+      val txt = commandField.getText()
+      if (txt.length > 0) {
 	val lastFragment = commandField.getText().split(" ").toList.last
-	updateSuggestions(lastFragment)
 	currentCommand match {
 	  case Some(c) => c.updateFragment(lastFragment)
 	  case None => {
@@ -115,27 +113,38 @@ object CommandInterface extends Observer {
 	    currentCommand.get.updateFragment(commandField.getText())
 	  }
 	}
-	Console.println("Command: " + currentCommand)
-      }
+	updateSuggestions(lastFragment)
+      } else {
+ 	updateSuggestions(txt)
+      }      
+    }
+    case behavior.Key(e) => e.getKeyCode() match { 
+      case KeyEvent.VK_ESCAPE => component.commandRequested
+      case KeyEvent.VK_SPACE => currentCommand.foreach {c => c.termCompleted(suggestionMatches)}
+      case KeyEvent.VK_TAB => selectSuggestedValue
+      case _ => {}
     }
   }
 
   private def suggestionMatches = {
-    val lastFragment = commandField.getText().split(" ").toList.last
-    List[VocabularyTerm]()
+    val frag = commandField.getText()
+    if (frag.length > 0) {
+      val lastFragment = frag.split(" ").toList.last
+      Vocabulary.matchingTerms(lastFragment)
+    } else {
+      List[VocabularyTerm]()
+    }
   }
   
   private def updateSuggestions(frag:String) = {
-    Console.println("1")
-    Suggestions.showSuggestions(Vocabulary.possibleTerms(frag))
-    Console.println("2")
-    var p = new java.awt.Point
-    Console.println("3")
-    commandPanel.getLocation(p)
-    Console.println("4")
-    Suggestions.addTo(commandPanel.getParent)
-    Console.println("5")
-    Suggestions.showAt(p.getX, p.getY)    
+    if (frag.length < 1) {
+      Suggestions.hide(commandPanel.getParent)
+    } else {
+      Suggestions.showSuggestions(Vocabulary.possibleTerms(frag))
+      var p = new java.awt.Point
+      commandPanel.getLocation(p)
+      Suggestions.showAt(p.getX, p.getY+commandPanel.getHeight, commandPanel.getParent)
+    }
   }
 
   private def selectSuggestedValue = {

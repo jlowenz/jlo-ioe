@@ -20,6 +20,7 @@ import javax.swing.border.LineBorder
 
 object Test {
   def main(args : Array[String]) : Unit = {
+    Scheduler.impl = new SingleThreadedScheduler()
     val t = new Trie[String]
     var l = List[String]("Jason", "Josh", "Jean", "Jeannie", "Jeff", "Nettie")
     l.foreach { name => t.insert(name,name) }
@@ -40,11 +41,10 @@ object Environment {
   UIManager.setLookAndFeel("net.sourceforge.napkinlaf.NapkinLookAndFeel")
   Scheduler.impl = new ThreadPoolScheduler()
   val screen = new Screen(System.getProperty("user.name"))
+  Vocabulary.load
 
   def main(args : Array[String]) : unit = {
     Console.println("Hello World!")
-    Console.println("" + (Character.digit('a',26)-10))
-    Console.println("" + new Trie[Object]().charToIndex('Z'))
   }
 }
 
