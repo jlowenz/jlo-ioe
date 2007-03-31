@@ -37,25 +37,32 @@ object Test {
 }
 
 object Environment {
-//  UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName())
+  //UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName())
   UIManager.setLookAndFeel("net.sourceforge.napkinlaf.NapkinLookAndFeel")
   Scheduler.impl = new ThreadPoolScheduler()
+
+  // todo: eventually need to support multiple screens
   val screen = new Screen(System.getProperty("user.name"))
   Vocabulary.load
+  
+  // todo: this indirection is here to handle multiple screens
+  def newSheet(a:data.DataObject) = screen.newSheet(a)
+  def splitSheet(a:data.DataObject) = screen.splitSheet(a)
 
   def main(args : Array[String]) : unit = {
     Console.println("Hello World!")
   }
 }
 
+// todo: split this out? probably should be in separate file
 class Screen(name : String) extends JFrame("Environment: " + name) with CommandInterceptor {
   val screenDevice = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice()
-  val top = new Panel() {
-    setBorder(new LineBorder(Color.gray,1))
-  }
+  val top = new Panel() { setBorder(new LineBorder(Color.gray,1)) } // todo: make INFOPANEL!
   val center = new Panel()
-  val bottom = new SheetSelector(width())
+  val sheetSelector = new SheetSelector(width())
   var commandOn = false
+  var currentSheet : Option[Sheet] = None
+
   setRootPane(new RootPane)
   setLayeredPane(new LayeredPane)
   setContentPane(new Panel)
@@ -67,17 +74,37 @@ class Screen(name : String) extends JFrame("Environment: " + name) with CommandI
   getContentPane().asInstanceOf[JComponent].grabFocus()
 
   def _layout = {
-    Console.println("ogasdasd")
     setLayout(new BorderLayout())
     top.setBackground(Color.black)
     center.setBackground(Color.white)
-    bottom.setBackground(Color.gray)
+    sheetSelector.setBackground(Color.gray)
     add(top, BorderLayout.NORTH)
     add(center, BorderLayout.CENTER)
-    add(bottom, BorderLayout.SOUTH)
+    add(sheetSelector, BorderLayout.SOUTH)
     getLayeredPane().setLayout(null)
     validate()
     repaint()
+  }
+
+  def display(aSheet:Sheet) = {
+    currentSheet match {
+      case Some(s) => center.remove(s)
+      case None => {}
+    }
+    center.add(aSheet)
+    validate
+    currentSheet = Some(aSheet)
+  }
+
+  def newSheet(a:data.DataObject) = {
+    // todo: keep track of the sheets?
+    val s = new Sheet(this,a)
+    sheetSelector.newSheet(s)
+    display(s)
+  }
+
+  def splitSheet(a:data.DataObject) = {
+    sheetSelector.currentSheet.split(a)
   }
 
   def showCommand = {

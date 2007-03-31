@@ -10,31 +10,41 @@ case class FreeTextPart(text:String,v:VocabularyTerm) extends CommandPart(text)
 class Command {
   var fragment = ""
   var text = ""
-  var command : Option[VocabularyTerm] = None
+  var verb : Option[VocabularyTerm] = None
+  var noun : Option[VocabularyTerm] = None
+  var freeText = List[VocabularyTerm]()
 
   def updateFragment(f:String) = fragment = f
   def completed(f:String,term:Option[VocabularyTerm]) = term match {
-    case Some(t) => command match { 
-      case Some(c) => reorder(c,t)
-      case None => command = Some(t)
+    case Some(t) => t.part match {
+      case VerbPart(t1,v) => verb = Some(v) // what if there's already a verb?
+      case DataTypePart(t1,c,v) => noun = Some(v)
+      case FreeTextPart(t1,v) => freeText ::: List(v)
+      case _ => {} // XXX handle the others
     }
-    case None => append(command.get, new FreeText(f))
+    case None => freeText ::: List(new FreeText(f))
   }
   def termCompleted(matches:List[VocabularyTerm]) = {
     // do something with the fragment?
-  }
-
-  def reorder(cmd:VocabularyTerm,next:VocabularyTerm) = {
-    Tuple(cmd.part,next.part) match {
-      case Tuple2(VerbPart(t,v),DataTypePart(t1,c,v1)) => v.attach(v1)
-      case _ => append(cmd,next)
+    Console.println("termCompleted: " + matches)
+    if (!matches.isEmpty) {
+      completed("", Some(matches.head))
     }
   }
 
-  private def append(t:VocabularyTerm,v:VocabularyTerm) : Unit = {
-    if (t.next.isDefined) append(t.next.get,v)
-    else t.attach(v)
+  def suggestions(frag:String) = {
+    Vocabulary.possibleTerms(frag)
   }
 
-  override def toString = command.getOrElse(fragment).toString
+  def execute = {
+    Console.println("executing command: " + this.toString)
+    verb.get.execute(noun)
+  }
+
+  override def toString = {
+    val s = verb.get.name + noun.get.name
+    if (!freeText.isEmpty) 
+      s + freeText.map({e=>e.name}).reduceLeft({(l:String,r:String) => l + " " + r}) 
+    else s
+  }
 }

@@ -100,26 +100,37 @@ object CommandInterface extends Observer {
 
   var currentCommand : Option[Command] = None
   listenTo(commandField) event {
-    case behavior.Action(_) => component.commandRequested
+    case behavior.Action(_) => {
+      currentCommand.foreach { 
+	c => { 
+	  c.termCompleted(suggestionMatches) 
+	  c.execute
+	}
+      }
+      component.commandRequested
+    }
     case behavior.DocumentChanged(e) => {
       Console.println("document changed")
       val txt = commandField.getText()
       if (txt.length > 0) {
-	val lastFragment = commandField.getText().split(" ").toList.last
-	currentCommand match {
-	  case Some(c) => c.updateFragment(lastFragment)
-	  case None => {
-	    currentCommand = Some(new Command)
-	    currentCommand.get.updateFragment(commandField.getText())
+	val words = commandField.getText().split(" ").toList
+	if (!words.isEmpty) {
+	  val lastFragment = words.last
+	  currentCommand match {
+	    case Some(c) => c.updateFragment(lastFragment)
+	    case None => {
+	      currentCommand = Some(new Command)
+	      currentCommand.get.updateFragment(commandField.getText())
+	    }
 	  }
+	  updateSuggestions(lastFragment)
 	}
-	updateSuggestions(lastFragment)
       } else {
  	updateSuggestions(txt)
       }      
     }
     case behavior.Key(e) => e.getKeyCode() match { 
-      case KeyEvent.VK_ESCAPE => component.commandRequested
+      case KeyEvent.VK_ESCAPE => { component.commandRequested }
       case KeyEvent.VK_SPACE => currentCommand.foreach {c => c.termCompleted(suggestionMatches)}
       case KeyEvent.VK_TAB => selectSuggestedValue
       case _ => {}
@@ -140,7 +151,7 @@ object CommandInterface extends Observer {
     if (frag.length < 1) {
       Suggestions.hide(commandPanel.getParent)
     } else {
-      Suggestions.showSuggestions(Vocabulary.possibleTerms(frag))
+      Suggestions.showSuggestions(currentCommand.get.suggestions(frag))
       var p = new java.awt.Point
       commandPanel.getLocation(p)
       Suggestions.showAt(p.getX, p.getY+commandPanel.getHeight, commandPanel.getParent)

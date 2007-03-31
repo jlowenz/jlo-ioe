@@ -1,7 +1,8 @@
 package jlo.ioe.command
+import jlo.ioe.data.DataObject
 
 object New {
-  Vocabulary.addTerm(new New)
+
 }
 
 class New extends VocabularyTerm {
@@ -9,16 +10,16 @@ class New extends VocabularyTerm {
   val name = "new"
   
   override def part = VerbPart(name,this)
-  
-  //override def synonyms = List(makeSynonym("create"), makeSynonym("make"))
-  override def synonyms = List("create","make")
-
+  override def synonyms = List(makeSynonym("create"), makeSynonym("make"))
   override def suggestions = Vocabulary.allDataTypes
-
-  override def execute = {
+  override def execute(next:Option[VocabularyTerm]) = {
     next match {
       case Some(v) => v.part match {
-	case DataTypePart(t,c,v1) => ObjectManager.objectCreated(c.newInstance())
+	case DataTypePart(t,c,v1) => {
+	  val obj = v1.execute(None).get.asInstanceOf[()=>DataObject]()
+	  ObjectManager.objectCreated(obj)
+	  Environment.newSheet(obj)
+	}
 	case _ => {}
       }
       case None => {}

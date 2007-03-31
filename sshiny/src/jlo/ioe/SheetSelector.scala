@@ -8,25 +8,26 @@ import jlo.ioe.ui._
 import scala.actors._
 
 class SheetSelector(width : int) extends Panel with Observable with Observer {
-  setMinimumSize(new Dimension(width,10))
-  setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS))
-  // for testing!
-  for (val i <- range(1,5)) {
-    addSelector(new Sheet)
-  }
+  var sheets = List[SheetButton]()
+  var current : SheetButton = _
 
-  def addSelector(aSheet:Sheet) = {
-    add(new SelectButton(aSheet))
+  setMinimumSize(new Dimension(width,27))
+  setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS))
+
+  def currentSheet = current.sheet
+
+  def newSheet(aSheet:Sheet) = {
+    sheets = new SheetButton(aSheet) :: sheets
+    add(sheets.head)
+    validate
   }
-  
-  def removeSelector(sheet:Sheet) = {
-      
-  }
-  
-  class SelectButton(theSheet:Sheet) extends Button(theSheet.title) with Observer {
+  def removeSheet = { remove(currentSheet); validate }    
+
+  class SheetButton(theSheet:Sheet) extends Button(theSheet.title) with Observer {
+    def sheet = theSheet
     preferredWidth(10000) 
     listenTo(this) event {
-      case Pressed() => Console.println("SelectButton pressed!")
+      case Pressed() => theSheet.show
     }
   }  
 }
