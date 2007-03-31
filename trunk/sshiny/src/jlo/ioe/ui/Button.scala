@@ -15,4 +15,5 @@ class Button(var text:String) extends JButton(text) with Component {
       fire(Pressed())
     }
   })
+  override def update(v:Any) = {}
 }

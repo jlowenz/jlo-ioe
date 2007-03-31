@@ -7,18 +7,20 @@ import scala.collection.jcl._
 trait VocabularyTerm {
   type T <: VocabularyTerm
   val name : String
-  var next : Option[VocabularyTerm] = None
-  
-//  def this(name:String) = this()
+  var synonym : Option[String] = None
 
   def part : CommandPart
-  def synonyms : List[String]
+  def synonyms : List[VocabularyTerm]
   def suggestions : List[VocabularyTerm]
-  def attach(v : VocabularyTerm) = next = Some(v)
-  def execute : Option[Any]
+  def execute(next:Option[VocabularyTerm]) : Option[Any]
   def copy : T = getClass().newInstance().asInstanceOf[T]
+  def makeSynonym(n:String) = {
+    val c = copy
+    c.synonym = Some(n)
+    c
+  }
 
-  override def toString = name
+  override def toString = synonym.getOrElse(name)
 }
 
 object Vocabulary {
@@ -28,12 +30,12 @@ object Vocabulary {
   val verbTrie = new Trie[VocabularyTerm]()   
   // load the commands
   val commands = List("New")
-  val dataTypes = List()
+  val dataTypes = List("Note")
   var vocab = actor {
     loop {
       react {
-	case Tuple2('matchTerm,p:String) => reply(allTerms.retrieveMatches(p))
-	case Tuple2('possibleTerms,partial:String) => {Console.println("here"); reply(_possibleTerms(partial))}
+	case Tuple2('matchTerm,p:String) => reply(List.unzip(allTerms.retrieveMatches(p))._2)
+	case Tuple2('possibleTerms,partial:String) => {reply(_possibleTerms(partial))}
 	case Tuple2('addTerm,term:VocabularyTerm) => reply(_addTerm(term))
 	case 'allDataTypes => reply(dataTypeTrie.getAll)
 	case 'allVerbs => reply(verbTrie.getAll)
@@ -48,6 +50,12 @@ object Vocabulary {
       addTerm(Class.forName(name).newInstance.asInstanceOf[VocabularyTerm])
     }
   }
+  dataTypes.foreach {
+    d => {
+      val name = "jlo.ioe.data.command."+d
+      addTerm(Class.forName(name).newInstance.asInstanceOf[VocabularyTerm])
+    }
+  }
 
   def load() = Console.println("Loading vocabulary")
   
@@ -59,17 +67,14 @@ object Vocabulary {
   }
 
   def possibleTerms(p:String) : List[VocabularyTerm] = {
-    Console.println("before send");
     vocab !? Tuple('possibleTerms,p) match {
-      case l:List[VocabularyTerm] => {Console.println("ack"); l }
+      case l:List[VocabularyTerm] => { l }
       case _ => List[VocabularyTerm]()
     }
   }
   private def _possibleTerms(p:String) : List[VocabularyTerm] = {
-    Console.println("_possibleTerms")
     val l = allTerms.retrieve(p)
-    Console.println("_after")
-    if (l.length > 0) 
+    if (!l.isEmpty) 
       (List.unzip(l))._2 
     else 
       List[VocabularyTerm]() 
@@ -87,10 +92,10 @@ object Vocabulary {
   def addTerm(t:VocabularyTerm) = vocab ! Tuple('addTerm,t)  
   private def _addTerm(t : VocabularyTerm) = {
     allTerms.insert(t.name,t)
-    t.synonyms.foreach { s => allTerms.insert(s,t) }
+    t.synonyms.foreach { s => allTerms.insert(s.toString,s) }
     t.part match {
-      case VerbPart(n,v) => v.synonyms.foreach { s => verbTrie.insert(s,v) }
-      case DataTypePart(n,c,v) => v.synonyms.foreach { s => dataTypeTrie.insert(s,v) }
+      case VerbPart(n,v) => v.synonyms.foreach { s => verbTrie.insert(s.toString,s) }
+      case DataTypePart(n,c,v) => v.synonyms.foreach { s => dataTypeTrie.insert(s.toString,s) }
       case _ => { Console.println("*** unhandled part: " + t) }
     }
   }
@@ -149,12 +154,11 @@ class Trie[A] extends TrieUtil {
   }
 
   def retrieve(p:String) : List[Tuple2[String,A]] = {
-    Console.println("Trie.retrieve")
     if (p.length < 1) return List[Tuple2[String,A]]()
     try {
       level(charToIndex(p.charAt(0))) match {
 	case Some(t:SubTrie[A]) => t._retrieve(p)
-	case None => {Console.println(" nothing"); List[Tuple2[String,A]]()}
+	case None => { List[Tuple2[String,A]]()}
       }
     } catch {
       case e:Throwable => { e.printStackTrace; throw e }
@@ -189,9 +193,6 @@ class SubTrie[A] extends TrieUtil {
   }
 
   def insert(partial:String, all:String, obj:A) : Unit = {
-    Console.println(partial)
-    Console.println("" + this + ".partials " + partials)
-    Console.println("" + this + ".completes " + completes)
     if (partial.length == 1) completes = Tuple(all,obj) :: completes
     else { 
       val p = partial.substring(1)
@@ -210,7 +211,6 @@ class SubTrie[A] extends TrieUtil {
   }
   
   def _retrieve(partial:String) : List[Tuple2[String,A]] = {
-    Console.println(partial)
     if (partial.length == 1) (partials ++ completes).toList
     else {
       val p = partial.substring(1)

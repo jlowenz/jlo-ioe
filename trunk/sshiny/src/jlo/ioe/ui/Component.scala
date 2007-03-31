@@ -36,7 +36,9 @@ trait Component extends JComponent with CommandInterceptor with Observable {
       def areNotHandled = {}
     }
   actions areNotHandled;
-    
+
+  // binding
+  def update(v:Any) = {}
 
   // conveniences
   def margin(t:int,l:int,b:int,r:int) : JComponent = { setBorder(new EmptyBorder(t,l,b,r)); this }  
