@@ -2,7 +2,7 @@
 
   <property environment="env"/>
   <property name="sources.dir" value="src"/>
-  <property name="build.dir" value="build"/>
+  <property name="build.dir" value="build/production"/>
 
   <taskdef resource="scala/tools/ant/antlib.xml">
     <classpath>
@@ -19,6 +19,7 @@
       <pathelement location="${env.SCALA_HOME}/share/scala/lib/scala-actors.jar"/>
       <pathelement location="${env.SCALA_HOME}/share/scala/lib/scala-dbc.jar"/>
       <pathelement location="lib/napkinlaf.jar"/>
+      <pathelement location="lib/swingx-2007_04_01.jar"/>
       <pathelement location="lib/swing-layout.jar"/>
       
       <!--<pathelement location="${your.path}"/>-->

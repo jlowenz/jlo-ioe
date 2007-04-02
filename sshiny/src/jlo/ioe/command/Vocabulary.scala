@@ -8,6 +8,7 @@ trait VocabularyTerm {
   type T <: VocabularyTerm
   val name : String
   var synonym : Option[String] = None
+  var split = false
 
   def part : CommandPart
   def synonyms : List[VocabularyTerm]
@@ -25,20 +26,21 @@ trait VocabularyTerm {
 
 object Vocabulary {
   import java.io.File
-  val allTerms = new Trie[VocabularyTerm]()
+  val allTermsTrie = new Trie[VocabularyTerm]()
   val dataTypeTrie = new Trie[VocabularyTerm]()
   val verbTrie = new Trie[VocabularyTerm]()   
   // load the commands
-  val commands = List("New")
+  val commands = List("New", "Also")
   val dataTypes = List("Note")
   var vocab = actor {
     loop {
       react {
-	case Tuple2('matchTerm,p:String) => reply(List.unzip(allTerms.retrieveMatches(p))._2)
+	case Tuple2('matchTerm,p:String) => reply(List.unzip(allTermsTrie.retrieveMatches(p))._2)
 	case Tuple2('possibleTerms,partial:String) => {reply(_possibleTerms(partial))}
 	case Tuple2('addTerm,term:VocabularyTerm) => reply(_addTerm(term))
 	case 'allDataTypes => reply(dataTypeTrie.getAll)
 	case 'allVerbs => reply(verbTrie.getAll)
+	case 'allTerms => reply(allTermsTrie.getAll)
 	case Tuple2('possibleDataType,partial:String) => reply(_possibleDataType(partial))
 	case Tuple2('possibleVerb,partial:String) => reply(_possibleVerb(partial))
       }
@@ -66,6 +68,13 @@ object Vocabulary {
     }
   }
 
+  def allTerms : List[VocabularyTerm] = {
+    vocab !? 'allTerms match {
+      case l:List[VocabularyTerm] => l
+      case _ => List[VocabularyTerm]()
+    }
+  }
+
   def possibleTerms(p:String) : List[VocabularyTerm] = {
     vocab !? Tuple('possibleTerms,p) match {
       case l:List[VocabularyTerm] => { l }
@@ -73,7 +82,7 @@ object Vocabulary {
     }
   }
   private def _possibleTerms(p:String) : List[VocabularyTerm] = {
-    val l = allTerms.retrieve(p)
+    val l = allTermsTrie.retrieve(p)
     if (!l.isEmpty) 
       (List.unzip(l))._2 
     else 
@@ -91,11 +100,11 @@ object Vocabulary {
 
   def addTerm(t:VocabularyTerm) = vocab ! Tuple('addTerm,t)  
   private def _addTerm(t : VocabularyTerm) = {
-    allTerms.insert(t.name,t)
-    t.synonyms.foreach { s => allTerms.insert(s.toString,s) }
+    allTermsTrie.insert(t.name,t)
+    t.synonyms.foreach { s => allTermsTrie.insert(s.toString,s) }
     t.part match {
       case VerbPart(n,v) => v.synonyms.foreach { s => verbTrie.insert(s.toString,s) }
-      case DataTypePart(n,c,v) => v.synonyms.foreach { s => dataTypeTrie.insert(s.toString,s) }
+      case DataTypePart(n,v) => v.synonyms.foreach { s => dataTypeTrie.insert(s.toString,s) }
       case _ => { Console.println("*** unhandled part: " + t) }
     }
   }

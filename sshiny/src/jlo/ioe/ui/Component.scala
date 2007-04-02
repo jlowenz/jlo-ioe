@@ -37,7 +37,7 @@ trait Component extends JComponent with CommandInterceptor with Observable {
     }
   actions areNotHandled;
 
-  // binding
+  // bindings
   def update(v:Any) = {}
 
   // conveniences
@@ -51,3 +51,13 @@ trait Component extends JComponent with CommandInterceptor with Observable {
   // CONVERSIONS
   implicit def doubleToInt(x:double) : int = x.asInstanceOf[int]
 }
+
+class Viewport extends javax.swing.JViewport with Component {}
+
+class Scroller(o:Component) extends javax.swing.JScrollPane(o) with Component {
+  override def createViewport() : javax.swing.JViewport = {
+    new Viewport
+  }
+}
+
+// class Frame(title:String) extends javax.swing.JFrame(title) with Component {}
