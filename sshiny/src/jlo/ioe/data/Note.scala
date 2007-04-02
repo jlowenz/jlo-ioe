@@ -17,7 +17,7 @@ package command {
 }
 
 // define note-related functions and loading routines
-object Note {
+object Note {   
   def defaultView(n:Note) = new NoteView(n)
 }
 
@@ -26,11 +26,24 @@ object Note {
 @SerialVersionUID(1000)
 class Note extends DataObject {
   val note = Text("note","")
+  var defView : Option[View] = None
+  // at the beginning, set the title to be the first set of characters
+  listenTo(note) event {
+    case FieldChange(n,v) => {
+      val eol = note.text.indexOf("\n")
+      if (eol > 0) {
+	meta(DataObject.kTitle, "Note: " + note.text.substring(0,eol))
+      } else {
+	meta(DataObject.kTitle, "Note: " + note.text.substring(0,Math.min(note.text.length,100)))
+      }
+    }
+  }
 
   def kind = "Note"
-  def defaultView = Note.defaultView(this)
-
-  override def toString = "Note:" + note() + "..."
+  def defaultView = defView match {
+    case Some(v) => v
+    case None => { defView = Some(Note.defaultView(this)); defView.get }
+  } // todo: need to add support for single views (i.e. accessing an object with a view already open yields that view)
 }
 
 import jlo.ioe.ui._
@@ -40,29 +53,31 @@ class NoteView(note:Note) extends jlo.ioe.View {
   import javax.swing.border.LineBorder
   import java.awt.GridLayout
   import javax.swing.JScrollPane
-  val textPane = new TextPane {
+  import java.awt.Dimension
+  val textPane = new TextPane with behavior.DocumentTracker {
     setBackground(new Color(240,240,220))
   } initialFocus
   val scrollPane = new Scroller(textPane)
+  preferredSize(200,200)
+  setSize(new Dimension(200,200))
 
   textPane.bindTo(note.note).trackingText;
 
-//   setLayout(new GridLayout(1,1))
-//   add(new JScrollPane(textPane))
-  val _layout = new org.jdesktop.layout.GroupLayout(this);
-  this.setLayout(_layout);
-  _layout.setHorizontalGroup(
-    _layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-    .add(_layout.createSequentialGroup()
-         .addContainerGap()
-         .add(scrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 360, scala.compat.Math.MAX_SHORT)
-         .addContainerGap())
-  );
-  _layout.setVerticalGroup(
-    _layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-    .add(_layout.createSequentialGroup()
-         .addContainerGap()
-         .add(scrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 266, scala.compat.Math.MAX_SHORT)
-         .addContainerGap())
-  );
+  add(scrollPane)
+//   val _layout = new org.jdesktop.layout.GroupLayout(this);
+//   this.setLayout(_layout);
+//   _layout.setHorizontalGroup(
+//     _layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+//     .add(_layout.createSequentialGroup()
+//          .addContainerGap()
+//          .add(scrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 360, scala.compat.Math.MAX_SHORT)
+//          .addContainerGap())
+//   );
+//   _layout.setVerticalGroup(
+//     _layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+//     .add(_layout.createSequentialGroup()
+//          .addContainerGap()
+//          .add(scrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 266, scala.compat.Math.MAX_SHORT)
+//          .addContainerGap())
+//   );
 }

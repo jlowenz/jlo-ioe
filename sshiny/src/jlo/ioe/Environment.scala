@@ -89,20 +89,36 @@ class Screen(name : String) extends JFrame("Environment: " + name) with CommandI
     repaint()
   }
 
-  def nextSheet = sheetSelector.nextSheet
-  def prevSheet = sheetSelector.prevSheet
+  def nextSheet = currentSheet match {
+    case Some(s) => currentSheet = Some(sheetSelector.nextSheet)
+    case None => {}
+  }
+
+  def prevSheet = currentSheet match {
+    case Some(s) => currentSheet = Some(sheetSelector.prevSheet)
+    case None => {}
+  }
 
   def display(aSheet:Sheet) = {
-    currentSheet match {
-      case Some(s) => { center.remove(s); s.setVisible(false); }
-      case None => {}
+    val displayer = new Runnable {
+      def run : Unit = {
+	currentSheet match {
+	  case Some(s) => { center.remove(s); s.setVisible(false); }
+	  case None => {}
+	}
+	aSheet.setVisible(true)
+	center.add(aSheet)
+	center.invalidate()
+	validate()
+	repaint()
+	currentSheet = Some(aSheet)
+      }
     }
-    aSheet.setVisible(true)
-    center.add(aSheet)
-    invalidate()
-    validate()
-    repaint()
-    currentSheet = Some(aSheet)
+    if (Thread.currentThread.getName().startsWith("AWT")) {
+      displayer.run
+    } else {
+      SwingUtilities.invokeLater(displayer)
+    }
   }
 
   def newSheet(a:data.DataObject) = {
@@ -117,19 +133,27 @@ class Screen(name : String) extends JFrame("Environment: " + name) with CommandI
   }
 
   def showCommand = {
-    CommandInterface.component.setVisible(true)
-    center(CommandInterface.component)
-    getLayeredPane().add(CommandInterface.component,CommandInterface.level)
-    validate()
-    repaint()
+    SwingUtilities.invokeLater(new Runnable {
+      def run : Unit = {
+	CommandInterface.component.setVisible(true)
+	center(CommandInterface.component)
+	getLayeredPane().add(CommandInterface.component,CommandInterface.level)
+	validate()
+	repaint()
+      }
+    })
   }
 
   def removeCommand = {
-    CommandInterface.component.setVisible(false)
-    getLayeredPane().remove(CommandInterface.component)
-    validate()
-    repaint()
-    getContentPane().requestFocusInWindow
+    SwingUtilities.invokeLater(new Runnable {
+      def run : Unit = {
+	CommandInterface.component.setVisible(false)
+	getLayeredPane().remove(CommandInterface.component)
+	validate()
+	repaint()
+	getContentPane().requestFocusInWindow
+      }
+    })
   }
   
   def center(c:JComponent) = {
