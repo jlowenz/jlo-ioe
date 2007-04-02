@@ -52,6 +52,7 @@ case class ButtonBinder(comp:Button) extends Binder[ButtonBinder] with FunctionB
 
 class View extends Panel with Observer {
   setFocusCycleRoot(true)
+  setMinimumSize(new java.awt.Dimension(10,10))
 
   implicit def view(c:TextComponent) : TextBinder = {
     Console.println("view conversion!")

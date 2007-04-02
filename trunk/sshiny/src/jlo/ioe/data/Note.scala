@@ -40,7 +40,7 @@ class Note extends DataObject {
   }
 
   def kind = "Note"
-  def defaultView = defView match {
+  def defaultView : View = defView match {
     case Some(v) => v
     case None => { defView = Some(Note.defaultView(this)); defView.get }
   } // todo: need to add support for single views (i.e. accessing an object with a view already open yields that view)
@@ -58,8 +58,6 @@ class NoteView(note:Note) extends jlo.ioe.View {
     setBackground(new Color(240,240,220))
   } initialFocus
   val scrollPane = new Scroller(textPane)
-  preferredSize(200,200)
-  setSize(new Dimension(200,200))
 
   textPane.bindTo(note.note).trackingText;
 
