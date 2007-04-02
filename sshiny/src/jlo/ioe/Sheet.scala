@@ -29,8 +29,7 @@ class Sheet(screen:Screen, obj:data.DataObject) extends Panel with Observer {
     this
   }
 
-  def split(a:data.DataObject) = {
-    
+  def split(a:data.DataObject) = {    
     Console.println(splits)
     val max = findSplit(splits,splits)
     Console.println(max)

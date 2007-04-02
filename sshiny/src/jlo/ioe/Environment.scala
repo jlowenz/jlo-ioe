@@ -122,6 +122,7 @@ class Screen(name : String) extends JFrame("Environment: " + name) with CommandI
   }
 
   def newSheet(a:data.DataObject) = {
+    a.defaultView.setPreferredSize(getSize())
     // todo: keep track of the sheets?
     val s = new Sheet(this,a)
     sheetSelector.newSheet(s)
