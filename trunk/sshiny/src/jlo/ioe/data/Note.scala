@@ -8,7 +8,7 @@ package command {
     type T = this.type
     val name = "note"
     
-    def part = DataTypePart("note",classOf[Note],this)
+    def part = DataTypePart("note",this)
     def synonyms = List[VocabularyTerm]()
     def suggestions = List[VocabularyTerm]()
     // by convention, execute on a DataType command returns the data type singleton
@@ -37,13 +37,32 @@ import jlo.ioe.ui._
 class NoteView(note:Note) extends jlo.ioe.View {
   import java.awt.Color
   import javax.swing.border.EmptyBorder
+  import javax.swing.border.LineBorder
+  import java.awt.GridLayout
+  import javax.swing.JScrollPane
   val textPane = new TextPane {
     setBackground(new Color(240,240,220))
-  }
+  } initialFocus
+  val scrollPane = new Scroller(textPane)
 
   textPane.bindTo(note.note).trackingText;
 
-  setBorder(new EmptyBorder(10,10,10,10))
-  add(textPane)
-
+//   setLayout(new GridLayout(1,1))
+//   add(new JScrollPane(textPane))
+  val _layout = new org.jdesktop.layout.GroupLayout(this);
+  this.setLayout(_layout);
+  _layout.setHorizontalGroup(
+    _layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+    .add(_layout.createSequentialGroup()
+         .addContainerGap()
+         .add(scrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 360, scala.compat.Math.MAX_SHORT)
+         .addContainerGap())
+  );
+  _layout.setVerticalGroup(
+    _layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+    .add(_layout.createSequentialGroup()
+         .addContainerGap()
+         .add(scrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 266, scala.compat.Math.MAX_SHORT)
+         .addContainerGap())
+  );
 }

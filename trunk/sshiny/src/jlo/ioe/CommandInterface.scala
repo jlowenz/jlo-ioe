@@ -60,8 +60,8 @@ object CommandInterface extends Observer {
       val layout = new org.jdesktop.layout.GroupLayout(this);
       this.setLayout(layout);
       layout.setHorizontalGroup(
-	layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-	.add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+        layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+        .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
              .addContainerGap()
              .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                   .add(org.jdesktop.layout.GroupLayout.LEADING, commandField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 360, Math.MAX_SHORT)
@@ -69,14 +69,14 @@ object CommandInterface extends Observer {
              .addContainerGap())
       );
       layout.setVerticalGroup(
-	layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-	.add(layout.createSequentialGroup()
+        layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+        .add(layout.createSequentialGroup()
              .addContainerGap()
-             .add(jLabel1)
-               .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-             .add(commandField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-             .addContainerGap(40, Math.MAX_SHORT))
-      );
+             .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Math.MAX_SHORT)
+             .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+             .add(commandField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 22, Math.MAX_SHORT)
+             .addContainerGap())
+      );      
       commandField.requestFocusInWindow()
     }
 
@@ -101,11 +101,13 @@ object CommandInterface extends Observer {
   var currentCommand : Option[Command] = None
   listenTo(commandField) event {
     case behavior.Action(_) => {
-      currentCommand.foreach { 
-	c => { 
+      currentCommand match {
+	case Some(c) => { 
 	  c.termCompleted(suggestionMatches) 
 	  c.execute
+	  currentCommand = None
 	}
+	case None => {}
       }
       component.commandRequested
     }

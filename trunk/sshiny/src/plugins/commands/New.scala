@@ -15,10 +15,11 @@ class New extends VocabularyTerm {
   override def execute(next:Option[VocabularyTerm]) = {
     next match {
       case Some(v) => v.part match {
-	case DataTypePart(t,c,v1) => {
+	case DataTypePart(t,v1) => {
 	  val obj = v1.execute(None).get.asInstanceOf[()=>DataObject]()
 	  ObjectManager.objectCreated(obj)
-	  Environment.newSheet(obj)
+	  if (split) Environment.splitSheet(obj)
+	  else Environment.newSheet(obj)
 	}
 	case _ => {}
       }

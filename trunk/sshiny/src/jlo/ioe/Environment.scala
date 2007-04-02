@@ -9,7 +9,7 @@ import javax.swing.JComponent
 import java.awt.BorderLayout
 import javax.swing.UIManager
 import javax.swing._
-import java.awt._
+import java.awt.AWTEvent
 import java.awt.event._
 import scala.actors._
 import jlo.ioe.ui._
@@ -37,8 +37,8 @@ object Test {
 }
 
 object Environment {
-  //UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName())
-  UIManager.setLookAndFeel("net.sourceforge.napkinlaf.NapkinLookAndFeel")
+  UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName())
+  //UIManager.setLookAndFeel("net.sourceforge.napkinlaf.NapkinLookAndFeel")
   Scheduler.impl = new ThreadPoolScheduler()
 
   // todo: eventually need to support multiple screens
@@ -48,6 +48,9 @@ object Environment {
   // todo: this indirection is here to handle multiple screens
   def newSheet(a:data.DataObject) = screen.newSheet(a)
   def splitSheet(a:data.DataObject) = screen.splitSheet(a)
+  def nextSheet = screen.nextSheet
+  def prevSheet = screen.prevSheet
+  def commandRequested = screen.commandRequested
 
   def main(args : Array[String]) : unit = {
     Console.println("Hello World!")
@@ -58,7 +61,7 @@ object Environment {
 class Screen(name : String) extends JFrame("Environment: " + name) with CommandInterceptor {
   val screenDevice = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice()
   val top = new Panel() { setBorder(new LineBorder(Color.gray,1)) } // todo: make INFOPANEL!
-  val center = new Panel()
+  val center = new Panel() 
   val sheetSelector = new SheetSelector(width())
   var commandOn = false
   var currentSheet : Option[Sheet] = None
@@ -86,13 +89,19 @@ class Screen(name : String) extends JFrame("Environment: " + name) with CommandI
     repaint()
   }
 
+  def nextSheet = sheetSelector.nextSheet
+  def prevSheet = sheetSelector.prevSheet
+
   def display(aSheet:Sheet) = {
     currentSheet match {
-      case Some(s) => center.remove(s)
+      case Some(s) => { center.remove(s); s.setVisible(false); }
       case None => {}
     }
+    aSheet.setVisible(true)
     center.add(aSheet)
-    validate
+    invalidate()
+    validate()
+    repaint()
     currentSheet = Some(aSheet)
   }
 

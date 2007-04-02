@@ -3,5 +3,7 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Scala Local"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="lib/swingx-2007_04_01.jar"/>
+	<classpathentry kind="lib" path="lib/swing-layout.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
