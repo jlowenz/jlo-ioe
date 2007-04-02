@@ -20,6 +20,10 @@ trait Observer {
 	  l = f :: l
 	  handlers = handlers.update(o, l)
 	}
+	case RemoveEvents(o) => {
+	  Console.println("remove events")
+	  handlers = handlers - o
+	}
       }
     } 
   }
@@ -29,16 +33,18 @@ trait Observer {
   }
 
   var handlers = Map[Observable,List[Function1[ObservableEvent,Unit]]]()
-  handler.start()
+//  handler.start()
 
   def listenTo(o:Observable)  = { o.addObserver(this); new ListenTarget(o) }
-  def ignore(o:Observable) : this.type = { o.removeObserver(this); this }
+  // maybe don't want to remove events? not sure
+  def ignore(o:Observable) : this.type = { o.removeObserver(this); handler ! RemoveEvents(o); this }
   def handle(o:Observable, e:ObservableEvent) = handler ! Handle(o,e)
 
   
   abstract class Msg
   case class Handle(o:Observable, e:ObservableEvent) extends Msg
   case class Event(o:Observable, f:Function1[ObservableEvent,Unit]) extends Msg
+  case class RemoveEvents(o:Observable) extends Msg
 }
 
 trait Observable {
@@ -55,7 +61,7 @@ trait Observable {
     }
   }
   var listeners = List[Observer]()
-  observers.start()
+//  observers.start()
   
   def addObserver(o:Observer) = observers ! Add(o)
   def removeObserver(o:Observer) = observers ! Remove(o)

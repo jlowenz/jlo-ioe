@@ -49,13 +49,13 @@ class SheetSelector(width : int) extends Panel with Observable with Observer {
     }
   }    
   
-  def nextSheet = current match {
+  def nextSheet : Sheet = current match {
     case Some(c) => { current = Some(c.next); current.get.sheet.display }
-    case None => {}
+    case None => null
   }
-  def prevSheet = current match {
+  def prevSheet : Sheet = current match {
     case Some(c) => { current = Some(c.prev); current.get.sheet.display }
-    case None => {}
+    case None => null
   }
 
   class SheetButton(theSheet:Sheet) extends Button(theSheet.title) with Observer {
@@ -65,7 +65,10 @@ class SheetSelector(width : int) extends Panel with Observable with Observer {
     listenTo(this) event {
       case Pressed() => theSheet.display
     }
-
+    listenTo(theSheet) event {
+      case SheetTitleChanged(t) => setText(t)
+    }
+    
     def sheet = theSheet
   }  
 }

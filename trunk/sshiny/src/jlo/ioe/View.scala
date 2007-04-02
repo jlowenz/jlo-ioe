@@ -25,13 +25,15 @@ trait FunctionBinder[B] extends DataObject {
 
 case class TextBinder(comp:TextComponent) extends Binder[TextBinder] with Observer {
   import jlo.ioe.ui.behavior.DocumentChanged
-  Console.println("TextBinder(" + comp + ")")
   def trackingText = {
     listenTo(target) event {
-      case FieldChange(n,v) => comp.update(v)
+      case FieldChange(n,v) => if (v != comp.getText()) comp.update(v)
     }
     listenTo(comp) event {
-      case DocumentChanged(e) => target() = comp.getText()
+      case DocumentChanged(e) => {
+	Console.println("textbinder: doc changed")
+	target.asInstanceOf[Text].text(comp.getText())
+      }
     }
     this
   }
@@ -49,6 +51,16 @@ case class ButtonBinder(comp:Button) extends Binder[ButtonBinder] with FunctionB
 }
 
 class View extends Panel with Observer {
-  implicit def view(c:TextComponent) : TextBinder = new TextBinder(c)
-  implicit def view(c:Button) : ButtonBinder = new ButtonBinder(c)
+  setFocusCycleRoot(true)
+
+  implicit def view(c:TextComponent) : TextBinder = {
+    Console.println("view conversion!")
+//     new Throwable().printStackTrace()
+    new TextBinder(c)    
+  }
+  implicit def view(c:Button) : ButtonBinder = {
+    Console.println("view conversion!")
+//     new Throwable().printStackTrace()
+    new ButtonBinder(c)
+  }
 }

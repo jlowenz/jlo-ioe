@@ -16,7 +16,7 @@ object Aspect {
   case class Horizontal extends Aspect
 } 
 
-class Split[T](var obj:Option[T], var aspect:Aspect.Aspect, comp : (T)=>Component) {
+class Split[T](var obj:Option[T], var aspect:Aspect.Aspect, var weight: double, comp : (T)=>Component) {
   var kind : SplitType.SplitType = SplitType.NoSplit
   var first : Option[Split[T]] = None
   var second : Option[Split[T]] = None
@@ -31,59 +31,74 @@ class Split[T](var obj:Option[T], var aspect:Aspect.Aspect, comp : (T)=>Componen
 
   def verticalDivider(a:T,b:T) = {
     obj = None
-    first = Some(new Split(Some(a),Aspect.Vertical,comp))
-    second = Some(new Split(Some(b),Aspect.Vertical,comp))
+    comp(a).preferredWidth(comp(a).preferredWidth/2)
+    comp(b).preferredWidth(comp(b).preferredWidth/2)
+//     comp(a).setWidth(comp(a).preferredWidth)
+//     comp(b).setWidth(comp(b).preferredWidth)
+    first = Some(new Split(Some(a),Aspect.Vertical,0.5,comp))
+    second = Some(new Split(Some(b),Aspect.Vertical,0.5,comp))
     kind = SplitType.Vertical()
   }
   def horizontalDivider(a:T,b:T) = {
     obj = None
-    first = Some(new Split(Some(a),Aspect.Horizontal,comp))
-    second = Some(new Split(Some(b),Aspect.Horizontal,comp))
+    comp(a).preferredHeight(comp(a).preferredHeight/2)
+    comp(b).preferredHeight(comp(b).preferredHeight/2)
+//     comp(a).setHeight(comp(a).preferredHeight)
+//     comp(b).setHeight(comp(b).preferredHeight)
+    first = Some(new Split(Some(a),Aspect.Horizontal,0.5,comp))
+    second = Some(new Split(Some(b),Aspect.Horizontal,0.5,comp))
     kind = SplitType.Horizontal()
   }
 
   override def toString = "Split(" + obj + "," + aspect + "," + kind + "(" + first + ")(" + second + "))"
 }
 
+// TODO: this is broken. the splitpane seems not to handle more than 8 components!
 class Splitter extends JXMultiSplitPane with Component {
   import scala.collection.mutable.HashMap
   import scala.compat.StringBuilder
 
   def resplit[T](root:Split[T]) = {
-    removeAll()
-//     String layoutDef =
-//       "(COLUMN (ROW weight=1.0 left (COLUMN middle.top middle middle.bottom) right) bottom)";
-    val compMap = new HashMap[String,Split[T]]
-    val layoutDef = buildLayout(root,compMap,0,new StringBuilder)
-    Console.println("Layout: " + layoutDef)
-    val modelRoot = MultiSplitLayout.parseModel(layoutDef);
-
-    getMultiSplitLayout().setModel(modelRoot);
-    
-    for (val p : Tuple2[String,Split[T]] <- compMap) {
-      add(p._1, p._2.component)
-    }
-    validate()
-    repaint()
+    javax.swing.SwingUtilities.invokeLater(new Runnable() {
+      def run = {
+	removeAll()
+	val compMap = new HashMap[String,Split[T]]
+	val layoutDef = buildLayout(root,compMap,new StringBuilder)
+	Console.println("Layout: " + layoutDef)
+	val modelRoot = MultiSplitLayout.parseModel(layoutDef);
+	
+	getMultiSplitLayout().setModel(modelRoot);
+	
+	for (val p : Tuple2[String,Split[T]] <- compMap) {
+	  Console.println("size: " + p._1 + ", " + p._2.component.getSize())
+	  Console.println("pref: " + p._1 + ", " + p._2.component.getPreferredSize())
+	  add(p._1, p._2.component)
+	}
+	revalidate()
+	repaint()
+      }
+    });
   }
 
-  private def buildLayout[T](split : Split[T], map : HashMap[String,Split[T]], i : int, sb : StringBuilder) : String = {
+  private def buildLayout[T](split : Split[T], map : HashMap[String,Split[T]], sb : StringBuilder) : String = {
     sb.append("(")
     split.kind match {
       case SplitType.Horizontal() => { 
 	sb.append("COLUMN ")
-	buildLayout(split.first.get,map,i+1,sb)
-	buildLayout(split.second.get,map,i+100,sb) 
+	//sb.append("weight=").append(split.weight).append(" ")
+	buildLayout(split.first.get,map,sb)
+	buildLayout(split.second.get,map,sb) 
       }
       case SplitType.Vertical() => { 
 	sb.append("ROW ")
-	buildLayout(split.first.get,map,i+1,sb)
-	buildLayout(split.second.get,map,i+100,sb) 
+	//sb.append("weight=").append(split.weight).append(" ")
+	buildLayout(split.first.get,map,sb)
+	buildLayout(split.second.get,map,sb)
       }
       case _ => {
-	val name = "comp" + i
+	val name = "comp" + split().get
 	map.update(name, split)
-	sb.append("LEAF weight=0.5 name=").append(name).append(" ")
+	sb.append("LEAF weight=0.0").append(" name=").append(name).append(" ")
       }
     }
     sb.append(")")

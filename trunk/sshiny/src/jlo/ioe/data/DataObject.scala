@@ -62,11 +62,19 @@ trait DataObject extends Observable with Observer {
   def defaultView : View 
 
   def objectID = oid
-  def meta(k:Symbol,v:AnyRef) = metadata = metadata.update(k,v)
+  def meta(k:Symbol,v:AnyRef) = {
+    metadata = metadata.update(k,v)
+    fire(DataObjectModified(MetadataChanged(k)))
+  }
   def meta(k:Symbol) = metadata.get(k)  
 
   // todo: are the below two methods useful?
-//   def addField(n:String,get:Any) = instanceFields = instanceFields.update(n,get)
+  def addField(n:String,get:Any) = {
+    instanceFields = instanceFields.update(n,get)
+    listenTo(get.asInstanceOf[Observable]) event {
+      case FieldChange(n,v) => fire(DataObjectModified(FieldChanged(n)))
+    }
+  }
 //   def field(n:String) : Any = instanceFields.get(n) match { 
 //     case Some(f) => f() 
 //     case None => null
@@ -75,10 +83,7 @@ trait DataObject extends Observable with Observer {
   case class FieldChange[T](name:String,value:T) extends ObservableEvent
   @serializable
   abstract class Field[T](name:String, init:T) extends Observable {
-    //addField(name,this)
-    listenTo(this) event {
-      case FieldChange(n,v) => fire(DataObjectModified(FieldChanged(n)))
-    }
+    addField(name,this)
     
     var data : T = init
     var getter : T => T = identity[T]
@@ -86,7 +91,10 @@ trait DataObject extends Observable with Observer {
     def get(newGetter:T=>T) = { getter = newGetter; this }
     def set(newSetter:T=>T) = { setter = newSetter; this }
     def apply() : T = getter(data)
-    def update(v:T) = { fire(FieldChange(name,v)); data = setter(v) }
+    def update(v:T) = { 
+      Console.println("Field update: " + v)
+      fire(FieldChange(name,v)); data = setter(v) 
+    }
   }
   //********************************************************************************
   // Field kinds! these need to be pulled out, somehow? how to extend? things should be
@@ -94,10 +102,12 @@ trait DataObject extends Observable with Observer {
   @serializable
   case class Text(name_ :String, init_ :String) extends Field(name_,init_) {
     val name = name_
-    def text : Text = apply()
-    def text(v:String) : Text = update(v)
+    def text : String = apply()
+    def text(v:String) : Text = { update(v); this }
   }
   implicit def view(a:Any) : Text = a.asInstanceOf[Text]
+
+  override def toString = kind.toString + oid.hashCode
 }
 
 @serializable
