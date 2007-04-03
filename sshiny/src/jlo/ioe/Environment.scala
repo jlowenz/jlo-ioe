@@ -17,6 +17,7 @@ import jlo.ioe.ui.Panel
 import jlo.ioe.command._
 import scala.List
 import javax.swing.border.LineBorder
+// import com.db4o._
 
 object Test {
   def main(args : Array[String]) : Unit = {
@@ -44,7 +45,11 @@ object Environment {
   // todo: eventually need to support multiple screens
   val screen = new Screen(System.getProperty("user.name"))
   Vocabulary.load
+//   val gDB = Db4o.openFile
   
+//   // todo: rethink this
+//   def db = gDb
+
   // todo: this indirection is here to handle multiple screens
   def newSheet(a:data.DataObject) = screen.newSheet(a)
   def splitSheet(a:data.DataObject) = screen.splitSheet(a)

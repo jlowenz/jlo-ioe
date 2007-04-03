@@ -13,7 +13,7 @@ import jlo.ioe.command._
 
 object DataObject {
   val kOwner = 'owner
-  val kCreated = 'createdg
+  val kCreated = 'created
   val kModified = 'modified
   val kAccessed = 'accessed
   val kModifier = 'modifier
@@ -21,6 +21,7 @@ object DataObject {
   val kKind = 'kind
   val kTitle = 'title
   val kDescription = 'description
+  val kBaseMetadata = List(kOwner,kCreated,kModified,kAccessed,kModifier,kShared,kKind,kTitle,kDescription)
   Console.println("ooga booga")
 
   class ComparableSymbol(sym:Symbol) extends Ordered[Symbol] {
@@ -51,15 +52,17 @@ trait DataObject extends Observable with Observer {
 
   meta(kOwner,"a user") // XXX
   meta(kCreated,new Date)
-  meta(kModified,meta(kCreated)) 
-  meta(kAccessed,meta(kCreated))
+  meta(kModified,meta(kCreated).get) 
+  meta(kAccessed,meta(kCreated).get)
   meta(kModifier,"a user") // XXX
   meta(kShared,false)
   meta(kKind,kind)
 
+  // ********************************************************************************
   // TO BE DEFINED, i.e. subclass responsibility
   def kind : AnyRef
   def defaultView : View 
+  // ********************************************************************************
 
   def objectID = oid
   def meta(k:Symbol,v:AnyRef) = {
@@ -67,21 +70,24 @@ trait DataObject extends Observable with Observer {
     fire(DataObjectModified(MetadataChanged(k)))
   }
   def meta(k:Symbol) = metadata.get(k)  
+  def printMeta = {
+    kBaseMetadata.foreach { k => Console.println(k.toString + ": " + meta(k).get("")) }
+  }
 
-  // todo: are the below two methods useful?
+  override def toString = kind.toString + oid.hashCode
+
   def addField(n:String,get:Any) = {
     instanceFields = instanceFields.update(n,get)
     listenTo(get.asInstanceOf[Observable]) event {
-      case FieldChange(n,v) => fire(DataObjectModified(FieldChanged(n)))
+      case FieldChange(n,v) => {
+	meta(kModified, new Date)
+	fire(DataObjectModified(FieldChanged(n)))
+      }
     }
   }
-//   def field(n:String) : Any = instanceFields.get(n) match { 
-//     case Some(f) => f() 
-//     case None => null
-//   }
-
   case class FieldChange[T](name:String,value:T) extends ObservableEvent
-  @serializable
+  // todo: think about this - maybe not the best idea? 
+  // too nice for a programmer, but PITA for performance/space?
   abstract class Field[T](name:String, init:T) extends Observable {
     addField(name,this)
     
@@ -100,14 +106,30 @@ trait DataObject extends Observable with Observer {
   // Field kinds! these need to be pulled out, somehow? how to extend? things should be
   // available to all dataobjects
   @serializable
-  case class Text(name_ :String, init_ :String) extends Field(name_,init_) {
+  case class Text(name_ : String, init_ :String) extends Field(name_,init_) {
     val name = name_
     def text : String = apply()
     def text(v:String) : Text = { update(v); this }
   }
   implicit def view(a:Any) : Text = a.asInstanceOf[Text]
 
-  override def toString = kind.toString + oid.hashCode
+//   @serializable
+//   case class Ref(name_ : String, init_ : DataObject) extends Field(name_,init_) {
+//     override var data : Option[DataObject] = None
+//     var oid : ObjID = _
+//     get( (d) => d match {
+//       case Some(o) => o
+//       case None => load(oid)
+//     } )
+//     set( d => { oid = d.objectID; data = Some(d); d } )
+    
+//     def ref(v:DataObject) : Ref = { update(v); this }
+//     def ref : DataObject = apply()
+
+//     private def writeObject(oos : ObjectOutputStream) : Unit = {}
+//     private def readObject(ois : ObjectInputStream) : 
+//   }
+//   implicit def view(a:Any) : Ref = a.asInstanceOf[Ref]
 }
 
 @serializable
