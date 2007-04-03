@@ -21,6 +21,7 @@
       <pathelement location="lib/napkinlaf.jar"/>
       <pathelement location="lib/swingx-2007_04_01.jar"/>
       <pathelement location="lib/swing-layout.jar"/>
+      <pathelement location="lib/je-3.2.21.jar"/>
       
       <!--<pathelement location="${your.path}"/>-->
       <pathelement location="${build.dir}"/>

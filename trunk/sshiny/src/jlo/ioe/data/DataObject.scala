@@ -3,8 +3,10 @@ package jlo.ioe.data
 import java.util.Date
 import java.rmi.server.ObjID
 import scala.collection.immutable.TreeMap
+import scala.Predef.{boolean,int}
 import scala.Predef.identity
 import scala.Predef.boolean2Boolean
+import java.io.{ObjectOutputStream,ObjectInputStream}
 import jlo.ioe.ui.Observable // XXX refactor
 import jlo.ioe.ui.Observer // XXX refactor
 import jlo.ioe.ui.ObservableEvent
@@ -22,7 +24,6 @@ object DataObject {
   val kTitle = 'title
   val kDescription = 'description
   val kBaseMetadata = List(kOwner,kCreated,kModified,kAccessed,kModifier,kShared,kKind,kTitle,kDescription)
-  Console.println("ooga booga")
 
   class ComparableSymbol(sym:Symbol) extends Ordered[Symbol] {
     def compare(that:Symbol) = sym.name.compareTo(that.name)
@@ -33,6 +34,9 @@ object DataObject {
   
   implicit def toComparable(s:Symbol) : Ordered[Symbol] = new ComparableSymbol(s)
   implicit def toComparable(s:String) : Ordered[String] = new ComparableString(s)
+
+  def load(oid : ObjectID) : DataObject = ObjectManager.getStorageFor(oid).load(oid)
+  def store(o : DataObject) : DataObject = { o.save; o }
 }
 
 abstract class DataObjectModification
@@ -41,14 +45,44 @@ case class FieldChanged(fieldName:String) extends DataObjectModification
 
 case class DataObjectModified(dom:DataObjectModification) extends ObservableEvent
 
+trait DOStorage {
+  def createDB(n:String) : Database = {
+    try {
+      val dbConfig = new DatabaseConfig
+      dbConfig.setAllowCreate(true)
+      val db = ObjectManager.dbEnv.openDatabase(null,n,dbConfig)
+      true
+    } catch  {
+      case e:DatabaseException => e.printStackTrace
+    }
+  }
+
+  def store[T](o : T) : T
+  def load[T](oid : ObjectID) : T
+}
+
+class ObjectID(val clazz : Class) {
+  val className = clazz.getName()
+  val uid = new UID()
+}
+
+
 @serializable
 trait DataObject extends Observable with Observer {
   import DataObject._
   
-  val oid = new ObjID()
+
+  val oid = new ObjectID(Predef.classOf[this.type])
   var tags = List[String]()
   var metadata = TreeMap[Symbol,AnyRef]()
   var instanceFields = TreeMap[String,Any]()
+//   val _actor = actor {
+//     loop {
+//       react {
+// 	case 'save => { val out = configuration.getObjectOutputStream(oid); out.writeObject(this); out.close() }
+//       }
+//     }
+//   }
 
   meta(kOwner,"a user") // XXX
   meta(kCreated,new Date)
@@ -57,30 +91,42 @@ trait DataObject extends Observable with Observer {
   meta(kModifier,"a user") // XXX
   meta(kShared,false)
   meta(kKind,kind)
+  save // save on initial creation!
 
   // ********************************************************************************
   // TO BE DEFINED, i.e. subclass responsibility
   def kind : AnyRef
-  def defaultView : View 
+  def defaultView : View
+  protected def configuration : DOStorage
   // ********************************************************************************
 
+  // todo - how to make the object multithreaded - I think actors are a good fit here! need to actorify
+  // how to make actor's threadsafe?
+  def save : Unit = { val out = configuration.getObjectOutputStream(oid); out.writeObject(this); out.close() }
   def objectID = oid
   def meta(k:Symbol,v:AnyRef) = {
     metadata = metadata.update(k,v)
+    save
     fire(DataObjectModified(MetadataChanged(k)))
   }
   def meta(k:Symbol) = metadata.get(k)  
-  def printMeta = {
-    kBaseMetadata.foreach { k => Console.println(k.toString + ": " + meta(k).get("")) }
-  }
+  def printMeta = kBaseMetadata.foreach { k => Console.println(k.toString + ": " + meta(k).get("")) }
 
   override def toString = kind.toString + oid.hashCode
+
+//   private override def readObject(in:ObjectInputStream):Unit = {
+//     in.defaultReadObject()
+//   }
+//   private override def writeObject(out:ObjectOutputStream):Unit = {
+//     out.defaultWriteObject()
+//   }
 
   def addField(n:String,get:Any) = {
     instanceFields = instanceFields.update(n,get)
     listenTo(get.asInstanceOf[Observable]) event {
       case FieldChange(n,v) => {
 	meta(kModified, new Date)
+	save
 	fire(DataObjectModified(FieldChanged(n)))
       }
     }
@@ -113,23 +159,66 @@ trait DataObject extends Observable with Observer {
   }
   implicit def view(a:Any) : Text = a.asInstanceOf[Text]
 
-//   @serializable
-//   case class Ref(name_ : String, init_ : DataObject) extends Field(name_,init_) {
-//     override var data : Option[DataObject] = None
-//     var oid : ObjID = _
-//     get( (d) => d match {
-//       case Some(o) => o
-//       case None => load(oid)
-//     } )
-//     set( d => { oid = d.objectID; data = Some(d); d } )
-    
-//     def ref(v:DataObject) : Ref = { update(v); this }
-//     def ref : DataObject = apply()
+  @serializable
+  @SerialVersionUID(1000L)
+  case class Ref[T <: DataObject](name : String, init : T) extends Field(name,init) {
+    var loaded = true
+    var oid : ObjectID = init.objectID
+    var maybeData : Option[T] = Some(init)
+    get( (d) => maybeData match {
+      case Some(o) => o
+      case None => load(oid)
+    } )
+    set( d => { oid = d.objectID; maybeData = Some(d); d } )
 
-//     private def writeObject(oos : ObjectOutputStream) : Unit = {}
-//     private def readObject(ois : ObjectInputStream) : 
-//   }
-//   implicit def view(a:Any) : Ref = a.asInstanceOf[Ref]
+    def this(name_ :String, oid_ :ObjectID) = { this(name_ , null.asInstanceOf[T]); oid = oid_; maybeData = None; loaded = false; this }
+    
+    def ref(v:T) : Ref[T] = { update(v); this }
+    def ref : T = apply()
+    private def load(o:ObjectID) : T = { DataObject.load(o).asInstanceOf[T] }
+    private def writeReplace() : Object = new RefProxy[T](name,oid)
+  }
+  @serializable
+  @SerialVersionUID(1000L)
+  class RefProxy[T](name:String, oid: ObjectID) {
+    private def readReplace() : Object = {
+      new Ref[T](name,oid)
+    }
+  }
+  implicit def view[T](a:Any) : Ref[T] = a.asInstanceOf[Ref[T]]
+
+  abstract class DOCollection[E] extends Observable with Seq[E] {
+    var buf : Seq[E]
+
+    def add(e:E) : boolean
+    def addAll(c:DOCollection[E]) : boolean = { for (val e <- c) if (!add(e)) return false; true }
+    def clear : Unit 
+    def contains(o:Any) : boolean = buf.contains(o)
+    def containsAll(c:DOCollection[E]) : boolean = { for (val e <- c) if (!contains(e)) return false; true }
+    def isEmpty : boolean = buf.isEmpty
+    def remove(o:Any):boolean 
+    def removeAll(c:DOCollection[E]) : boolean = { for (val e <- c) if(!remove(e)) return false; true }
+    def size : int = buf.length
+    def toArray : Array[E] = buf.toArray
+    def asIterable : Iterable[E] = buf
+  }
+
+  case class DOList[E] extends DOCollection[E] {
+    import scala.collection.jcl.LinkedList
+    var buf = new LinkedList[E]
+    
+    override def add(e:E) = buf.add(e)
+    def push(e:E) = buf.underlying.addLast(e)
+    def offer(e:E) = buf.underlying.addFirst(e)
+    def pop : E = buf.underlying.removeFirst.asInstanceOf[E]
+    def poll : E = buf.underlying.removeLast.asInstanceOf[E]
+    override def clear = buf.underlying.clear()
+    override def remove(o:Any) : boolean = buf.remove(o.asInstanceOf[E])
+    def peekFirst : E = buf.underlying.getFirst.asInstanceOf[E]
+    def peekLast : E = buf.underlying.getLast.asInstanceOf[E]
+    def removeFirst : E = buf.underlying.removeFirst.asInstanceOf[E]
+    def removeLast : E = buf.underlying.removeLast.asInstanceOf[E]
+  }
 }
 
 @serializable

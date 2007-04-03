@@ -7,6 +7,8 @@ import java.awt.Dimension
 import jlo.ioe.ui._
 import scala.actors._
 
+@serializable
+@SerialVersionUID(1000L)
 class SheetSelector(width : int) extends Panel with Observable with Observer {
   import java.awt.Color
   var sheets : Option[SheetButton] = None
@@ -79,6 +81,8 @@ class SheetSelector(width : int) extends Panel with Observable with Observer {
     }
   }
 
+  @serializable
+  @SerialVersionUID(1000L)
   class SheetButton(theSheet:Sheet) extends Button(theSheet.title) with Observer {
     import java.awt.Color
     import java.awt.Graphics
