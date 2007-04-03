@@ -37,7 +37,7 @@ object Test {
 }
 
 object Environment {
-  UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName())
+  //UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName())
   //UIManager.setLookAndFeel("net.sourceforge.napkinlaf.NapkinLookAndFeel")
   Scheduler.impl = new ThreadPoolScheduler()
 
@@ -61,7 +61,7 @@ object Environment {
 class Screen(name : String) extends JFrame("Environment: " + name) with CommandInterceptor {
   val screenDevice = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice()
   val top = new Panel() { setBorder(new LineBorder(Color.gray,1)) } // todo: make INFOPANEL!
-  val center = new Panel() 
+  val center = new Panel() { setBorder(null) }
   val sheetSelector = new SheetSelector(width())
   var commandOn = false
   var currentSheet : Option[Sheet] = None
@@ -80,7 +80,7 @@ class Screen(name : String) extends JFrame("Environment: " + name) with CommandI
     setLayout(new BorderLayout())
     top.setBackground(Color.black)
     center.setBackground(Color.white)
-    sheetSelector.setBackground(Color.gray)
+    //sheetSelector.setBackground(Color.gray)
     add(top, BorderLayout.NORTH)
     add(center, BorderLayout.CENTER)
     add(sheetSelector, BorderLayout.SOUTH)

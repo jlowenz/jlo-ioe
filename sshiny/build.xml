@@ -2,7 +2,7 @@
 
   <property environment="env"/>
   <property name="sources.dir" value="src"/>
-  <property name="build.dir" value="build/production"/>
+  <property name="build.dir" value="build"/>
 
   <taskdef resource="scala/tools/ant/antlib.xml">
     <classpath>
@@ -29,6 +29,11 @@
   </target>
 
   <target name="build" depends="init">
+    <javac srcdir="${sources.dir}"
+	   destdir="${build.dir}"
+	   classpathref="build.classpath">
+      <include name="**/*.java"/>
+    </javac>
     <fsc srcdir="${sources.dir}"
 	    destdir="${build.dir}"
 	    classpathref="build.classpath"

@@ -36,13 +36,14 @@ trait Component extends JComponent with CommandInterceptor with Observable {
       def areNotHandled = {}
     }
   actions areNotHandled;
-//   addComponentListener(new ComponentAdapter() {
-//     override def componentResized(e:ComponentEvent) = {
-//       val dim = getSize();
-//       Console.println("resized(" + this + ") : " + dim)
-//       setPreferredSize(new Dimension(getWidth(),getHeight()))
-//     }
-//   })
+
+  def onSwingThread(f:()=>Unit) {
+    javax.swing.SwingUtilities.invokeLater(new Runnable() {
+      def run : Unit = {
+	f()
+      }
+    })
+  }
 
   override def setSize(dim:Dimension) : Unit = {
     if (dim.getWidth() <= 0 || dim.getHeight() <= 0) {

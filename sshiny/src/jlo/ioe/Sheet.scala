@@ -10,7 +10,7 @@ class Sheet(screen:Screen, obj:data.DataObject) extends Panel with Observer {
   var titleString : String = obj.toString // todo: how to track this?
   var splits = new Split(Some(obj), Aspect.Horizontal, 1.0, {(a:data.DataObject)=>a.defaultView})
   var splitPane = new Splitter
-  setBorder(new CompoundBorder(new LineBorder(Color.gray,1), new EmptyBorder(2,2,2,2)))
+  setBorder(new EmptyBorder(2,2,2,2))
   add(splitPane)
   splitPane.resplit(splits)
   listenTo(obj) event {
