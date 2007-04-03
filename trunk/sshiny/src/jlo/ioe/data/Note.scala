@@ -58,9 +58,8 @@ class NoteView(note:Note) extends jlo.ioe.View {
     setBackground(new Color(240,240,220))
   } initialFocus
   val scrollPane = new Scroller(textPane)
-
+  preferredSize(300,300)
   textPane.bindTo(note.note).trackingText;
-
   add(scrollPane)
 //   val _layout = new org.jdesktop.layout.GroupLayout(this);
 //   this.setLayout(_layout);

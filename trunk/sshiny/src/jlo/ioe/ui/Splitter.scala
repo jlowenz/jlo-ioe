@@ -54,17 +54,20 @@ class Split[T](var obj:Option[T], var aspect:Aspect.Aspect, var weight: double, 
 }
 
 // TODO: this is broken. the splitpane seems not to handle more than 8 components!
-class Splitter extends JXMultiSplitPane with Component {
+class Splitter extends jlo.ioe.ui.MSP with Component {
   import scala.collection.mutable.HashMap
   import scala.compat.StringBuilder
+  import javax.swing.JOptionPane
+
 
   def resplit[T](root:Split[T]) = {
+    getMSPLayout().setFloatingDividers(true)    
     val compMap = new HashMap[String,Split[T]]
     val layoutDef = buildLayout(root,compMap)
     Console.println("Layout: " + layoutDef)
-    //val modelRoot = MultiSplitLayout.parseModel(layoutDef);
+    //val modelRoot = MSPLayout.parseModel(layoutDef);
     val modelRoot = layoutDef
-    getMultiSplitLayout().setModel(modelRoot);
+    getMSPLayout().setModel(modelRoot);
 
     javax.swing.SwingUtilities.invokeLater(new Runnable() {
       def run = {
@@ -73,36 +76,33 @@ class Splitter extends JXMultiSplitPane with Component {
 	  Console.println("size: " + p._1 + ", " + p._2.component.getSize())
 	  Console.println("pref: " + p._1 + ", " + p._2.component.getPreferredSize())
 	  add(p._1, p._2.component)
+	  revalidate()
 	}
-	revalidate()
 	repaint()
       }
     });
   }
 
-  private def buildLayout[T](split : Split[T], map : HashMap[String,Split[T]]) : MultiSplitLayout.Node = {
+  private def buildLayout[T](split : Split[T], map : HashMap[String,Split[T]]) : MSPLayout.Node = {
     split.kind match {
       case SplitType.Horizontal() => {
-	val n = new MultiSplitLayout.Split(List(buildLayout(split.first.get,map),
-						new MultiSplitLayout.Divider,
+	val n = new MSPLayout.Split(List(buildLayout(split.first.get,map),
+						new MSPLayout.Divider,
 						buildLayout(split.second.get,map)).toArray)
 	n.setRowLayout(false)
-	n.setWeight(0.5)
 	n
       }
       case SplitType.Vertical() => {
-	val n = new MultiSplitLayout.Split(List(buildLayout(split.first.get,map),
-						new MultiSplitLayout.Divider,
+	val n = new MSPLayout.Split(List(buildLayout(split.first.get,map),
+						new MSPLayout.Divider,
 						buildLayout(split.second.get,map)).toArray)
 	n.setRowLayout(true)
-	n.setWeight(0.5)
 	n
       }
       case _ => {
 	val name = "comp" + split().get
 	map.update(name, split)
-	val leaf = new MultiSplitLayout.Leaf(name)	
-	leaf.setWeight(0.5)
+	val leaf = new MSPLayout.Leaf(name)	
 	leaf
       }
     }
