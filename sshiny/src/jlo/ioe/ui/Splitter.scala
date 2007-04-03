@@ -31,20 +31,12 @@ class Split[T](var obj:Option[T], var aspect:Aspect.Aspect, var weight: double, 
 
   def verticalDivider(a:T,b:T) = {
     obj = None
-//     comp(a).preferredWidth(comp(a).preferredWidth/2)
-//     comp(b).preferredWidth(comp(b).preferredWidth/2)
-//     comp(a).setWidth(comp(a).preferredWidth)
-//     comp(b).setWidth(comp(b).preferredWidth)
     first = Some(new Split(Some(a),Aspect.Vertical,0.5,comp))
     second = Some(new Split(Some(b),Aspect.Vertical,0.5,comp))
     kind = SplitType.Vertical()
   }
   def horizontalDivider(a:T,b:T) = {
     obj = None
-//     comp(a).preferredHeight(comp(a).preferredHeight/2)
-//     comp(b).preferredHeight(comp(b).preferredHeight/2)
-//     comp(a).setHeight(comp(a).preferredHeight)
-//     comp(b).setHeight(comp(b).preferredHeight)
     first = Some(new Split(Some(a),Aspect.Horizontal,0.5,comp))
     second = Some(new Split(Some(b),Aspect.Horizontal,0.5,comp))
     kind = SplitType.Horizontal()
