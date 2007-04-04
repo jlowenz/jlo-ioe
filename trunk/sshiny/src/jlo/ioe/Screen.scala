@@ -19,22 +19,34 @@ import scala.List
 import javax.swing.border.LineBorder
 
 
-// todo: split this out? probably should be in separate file
 @serializable
-@SerialVersionUID(1000)
+class ScreenState(name : String) {
+  var sheets = List[SheetState]()
+  var currentSheet : Option[SheetState] = None
+
+  def name = name
+  def addSheet(s:SheetState) = sheets = sheets ::: List(s)
+  def removeSheet(s:SheetState) = sheets = sheets.remove {e => s==e}
+}
+
+// todo: split this out? probably should be in separate file
 class Screen(name : String) extends JFrame("Environment: " + name) with CommandInterceptor {
-  @transient val screenDevice = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice()
-  @transient val top = new Panel() { setBorder(new LineBorder(Color.gray,1)) } // todo: make INFOPANEL!
+  var sstate = new ScreenState(name)
+  val screenDevice = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice()
+  val top = new Panel() { setBorder(new LineBorder(Color.gray,1)) } // todo: make INFOPANEL!
   val center = new Panel() { setBorder(null) }
   val sheetSelector = new SheetSelector(width())
   var commandOn = false
   var currentSheet : Option[Sheet] = None
   _setup
 
-//   @throws(classOf[IOException])
-//   @throws(classOf[ClassNotFoundException])
-//   private override def readObject(in:ObjectInputStream) = { in.defaultReadObject(); }
-//   private override def writeObject(out:ObjectOutputStream) = { }
+  def this(s : ScreenState) = { 
+    this(s.name)
+    sstate = s 
+    for (val ss <- sstate.sheets) {
+      
+    }
+  }
 
   private def _setup = {
     setRootPane(new RootPane)

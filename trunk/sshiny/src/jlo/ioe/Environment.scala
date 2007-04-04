@@ -17,25 +17,6 @@ import jlo.ioe.ui.Panel
 import jlo.ioe.command._
 import scala.List
 import javax.swing.border.LineBorder
-// import com.db4o._
-
-object Test {
-  def main(args : Array[String]) : Unit = {
-    Scheduler.impl = new SingleThreadedScheduler()
-    val t = new Trie[String]
-    var l = List[String]("Jason", "Josh", "Jean", "Jeannie", "Jeff", "Nettie")
-    l.foreach { name => t.insert(name,name) }
-    Console.println("j  : " + t.retrieve("j"))
-    Console.println("je : " + t.retrieve("je"))
-    Console.println("jea: " + t.retrieve("jea"))
-    Console.println("n  : " + t.retrieve("n"))
-
-    Vocabulary.addTerm(new New)
-    Console.println(Vocabulary.possibleTerms("o"))
-    Console.println(Vocabulary.possibleTerms("n"))
-    
-  }
-}
 
 object Environment {
   //UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName())
@@ -51,7 +32,7 @@ object Environment {
       ObjectManager.addScreen(screen)
       screen
     } else {
-      screen = ObjectManager.getFirstScreen
+      screen = new Screen(ObjectManager.getFirstScreen)
       screen
     }
   }

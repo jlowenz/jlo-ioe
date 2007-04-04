@@ -1,26 +1,24 @@
 package jlo.ioe
 
-import jlo.ioe.ui.Observer
+import jlo.ioe.ui.{Observer,Observable}
 import jlo.ioe.ui.Panel
 import jlo.ioe.ui.Component
 import jlo.ioe.ui.Button
 import jlo.ioe.ui.TextComponent
-import jlo.ioe.data.DataObject
+import jlo.ioe.data.{DataObject,FieldChange}
 
-trait Binder[B] extends DataObject {
-  var target : AnyRef = _
-  def bindTo[T](f : DataObject#Field[T]) : B = { 
+trait Binder[B]  {
+  var target : Observable = _
+  def bindTo[T](f : data.Field[T]) : B = { 
     Console.println("bindTo " + f)
     target = f
     Console.println("\ttarget: " + target)
     this.asInstanceOf[B] 
   }
-  override def defaultView = null
 }
-trait FunctionBinder[B] extends DataObject {
+trait FunctionBinder[B] {
   var func : ()=>Unit = _
   def bindTo[T](f : ()=>Unit) : B = { func = f; this.asInstanceOf[B] }
-  override def defaultView = null
 }
 
 case class TextBinder(comp:TextComponent) extends Binder[TextBinder] with Observer {
@@ -32,7 +30,7 @@ case class TextBinder(comp:TextComponent) extends Binder[TextBinder] with Observ
     listenTo(comp) event {
       case DocumentChanged(e) => {
 	Console.println("textbinder: doc changed")
-	target.asInstanceOf[Text].text(comp.getText())
+	target.asInstanceOf[data.Text].text(comp.getText())
       }
     }
     this
