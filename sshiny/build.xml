@@ -3,6 +3,8 @@
   <property environment="env"/>
   <property name="sources.dir" value="src"/>
   <property name="build.dir" value="build"/>
+  <property name="dist.dir" value="dist"/>
+  <property name="lib.dir" value="lib"/>
 
   <taskdef resource="scala/tools/ant/antlib.xml">
     <classpath>
@@ -56,8 +58,33 @@
 	  classpathref="build.classpath"/>
   </target>
 
+  <target name="dist" depends="build">
+    <mkdir dir="${dist.dir}"/>
+    <unjar dest="${dist.dir}">
+      <fileset dir="${lib.dir}">
+	<include name="*.jar"/>
+      </fileset>
+      <fileset dir="${env.SCALA_HOME}/share/scala/lib">
+	<include name="*.jar"/>
+      </fileset>
+    </unjar>
+    <copy todir="${dist.dir}">
+      <fileset dir="${build.dir}">
+	<include name="**/*.class"/>
+      </fileset>
+    </copy>
+    <jar destfile="ioe.jar" 
+	 basedir="${dist.dir}"
+	 includes="**/*.class">
+      <manifest>
+	<attribute name="Main-Class" value="jlo.ioe.Environment"/>
+      </manifest>     
+    </jar>
+  </target>
+
   <target name="clean">
     <delete dir="${build.dir}"/>
+    <delete dir="${dist.dir}"/>
   </target>
 
 </project>

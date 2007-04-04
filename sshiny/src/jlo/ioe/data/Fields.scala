@@ -33,6 +33,23 @@ case class Text(owner_ : DataObject, name_ : String, init_ :String) extends Fiel
   def text(v:String) : Text = { update(v); this }
 }
 
+// todo: this needs to be fixed - should have model?? instead of visual element?
+class ImageCanvas extends jlo.ioe.ui.Panel {
+  import javax.swing.border.LineBorder
+  import java.awt.Color
+
+  setBackground(Color.white)
+  setBorder(new LineBorder(Color.black,1))
+}
+
+object Graphics {
+  def BLANK = new ImageCanvas
+}
+
+case class Graphic(owner_ : DataObject, name_ : String, init_ : ImageCanvas) extends Field(owner_,name_,init_) {
+  
+}
+
 @serializable
 @SerialVersionUID(1000L)
 case class Ref[R <: DataObject](owner : DataObject, name : String, init : R) extends Field(owner, name,init) {

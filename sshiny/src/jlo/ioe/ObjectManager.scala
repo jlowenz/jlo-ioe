@@ -33,7 +33,7 @@ object ObjectManager {
 
   // Open the environment. Allow it to be created if it does not already exist.
   var dbEnv : Environment = openEnvironment
-
+  
   // load the system state!
   private var state : SystemState = loadSystem
   private var storageMap = new HashMap[Class,data.DOStorage[data.DataObject]]
@@ -62,6 +62,8 @@ object ObjectManager {
   private def openEnvironment : Environment = {
     var dbEnv : Environment = null
     try {
+      val envDir = new File("./db")
+      if (!envDir.exists()) envDir.mkdir
       val envConfig = new EnvironmentConfig()
       envConfig.setTransactional(true)
       envConfig.setAllowCreate(true)
