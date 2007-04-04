@@ -30,8 +30,8 @@ object Vocabulary {
   val dataTypeTrie = new Trie[VocabularyTerm]()
   val verbTrie = new Trie[VocabularyTerm]()   
   // load the commands
-  val commands = List("New", "Also")
-  val dataTypes = List("Note")
+  val commands = List("New", "Also", "Quit")
+  val dataTypes = List("Note","Email","Image")
   var vocab = actor {
     loop {
       react {
@@ -223,9 +223,15 @@ class SubTrie[A] extends TrieUtil {
     if (partial.length == 1) (partials ++ completes).toList
     else {
       val p = partial.substring(1)
-      level(charToIndex(p.charAt(0))) match {
-	case Some(t) => t._retrieve(p)
-	case None => List[Tuple2[String,A]]()
+      val index = charToIndex(p.charAt(0))
+      if (index >= 0 && index <= 26) {
+	level(charToIndex(p.charAt(0))) match {
+	  case Some(t) => t._retrieve(p)
+	  case None => List[Tuple2[String,A]]()
+	}
+      } else {
+	Console.println("partial(" + p + ")")
+	List[Tuple2[String,A]]()
       }
     }
   }
