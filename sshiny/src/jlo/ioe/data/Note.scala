@@ -17,7 +17,8 @@ package command {
 }
 
 // define note-related functions and loading routines
-object Note {   
+object Note extends DOStorage[Note] {   
+  val db = createDB("Note")
   def defaultView(n:Note) = new NoteView(n)
 }
 
@@ -25,20 +26,21 @@ object Note {
 @serializable
 @SerialVersionUID(1000)
 class Note extends DataObject {
-  val note = Text("note","")
+  val note = Text(this, "note", "")
   var defView : Option[View] = None
   // at the beginning, set the title to be the first set of characters
   listenTo(note) event {
     case FieldChange(n,v) => {
       val eol = note.text.indexOf("\n")
       if (eol > 0) {
-	meta(DataObject.kTitle, "Note: " + note.text.substring(0,eol))
+	meta(DataObjects.kTitle, "Note: " + note.text.substring(0,eol))
       } else {
-	meta(DataObject.kTitle, "Note: " + note.text.substring(0,Math.min(note.text.length,100)))
+	meta(DataObjects.kTitle, "Note: " + note.text.substring(0,Math.min(note.text.length,100)))
       }
     }
   }
 
+  def storage = Note
   def kind = "Note"
   def defaultView : View = defView match {
     case Some(v) => v

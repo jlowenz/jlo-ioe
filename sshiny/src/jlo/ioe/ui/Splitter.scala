@@ -16,6 +16,7 @@ object Aspect {
   case class Horizontal extends Aspect
 } 
 
+@serializable
 class Split[T](var obj:Option[T], var aspect:Aspect.Aspect, var weight: double, comp : (T)=>Component) {
   var kind : SplitType.SplitType = SplitType.NoSplit
   var first : Option[Split[T]] = None

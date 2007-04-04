@@ -3,11 +3,13 @@ package jlo.ioe.ui;
 import scala.collection.jcl._
 import scala.collection.immutable._
 import scala.actors.Actor._
+import java.io.{ObjectInputStream,ObjectOutputStream}
 
 abstract class ObservableEvent
 
 trait Observer {
-  val handler = actor {
+  var handler = makeActor
+  private def makeActor = actor {
     loop {
       react {
 	case Handle(o, e) => { 
@@ -28,6 +30,15 @@ trait Observer {
     } 
   }
  
+//   @throws(classOf[java.io.IOException])
+//   @throws(classOf[java.lang.ClassNotFoundException])
+//   def readObject(in:ObjectInputStream) :Unit = {
+//     handler = makeActor
+//     handlers = Map[Observable,List[Function1[ObservableEvent,Unit]]]()
+//   }
+//   @throws(classOf[java.io.IOException])
+//   def writeObject(out:ObjectOutputStream) :Unit = {}
+
   class ListenTarget(o:Observable) {
     def event(f:Function1[ObservableEvent,Unit]) = handler ! Event(o,f)
   }
@@ -48,7 +59,9 @@ trait Observer {
 }
 
 trait Observable {
-  val observers = actor {
+  var observers = makeActor
+
+  private def makeActor = actor {
     loop {
       react {
 	case Add(o) => {
@@ -60,8 +73,21 @@ trait Observable {
       }
     }
   }
+
   var listeners = List[Observer]()
 //  observers.start()
+
+//   @throws(classOf[java.io.IOException])
+//   @throws(classOf[java.lang.ClassNotFoundException])
+//   def readObject(in:ObjectInputStream) : Unit = {
+//     observers = makeActor
+//     listeners = List[Observer]()
+//   }
+//   @throws(classOf[java.io.IOException])
+//   def writeObject(out:ObjectOutputStream) : Unit = {
+//     Console.println("called?? **********************")
+//   }
+
   
   def addObserver(o:Observer) = observers ! Add(o)
   def removeObserver(o:Observer) = observers ! Remove(o)
