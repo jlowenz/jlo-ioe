@@ -37,5 +37,14 @@ public abstract class LazyRef<T extends Identifiable> implements Serializable {
 		} finally { lock.unlock(); }
 	}
 
+	public boolean isLoaded() {
+		return isLoaded(oid);
+	}
+
+	public ObjectID getOID() {
+		return oid;	
+	}
+
+	abstract boolean isLoaded(ObjectID oid);
 	abstract Opt<T> loadObject(ObjectID oid);
 }

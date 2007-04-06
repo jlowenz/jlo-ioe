@@ -1,18 +1,20 @@
 package jlo.ioe.data;
 
-import jlo.ioe.messaging.AbstractMessage;
-import jlo.ioe.messaging.SubscriberDelegate;
-import jlo.ioe.messaging.MessageService;
 import jlo.ioe.data.field.Field;
-import jlo.ioe.util.Opt;
-import jlo.ioe.util.ObjectID;
+import jlo.ioe.messaging.AbstractMessage;
+import jlo.ioe.messaging.Message;
+import jlo.ioe.messaging.MessageService;
+import jlo.ioe.messaging.SubscriberDelegate;
 import jlo.ioe.util.F;
+import jlo.ioe.util.Identifiable;
+import jlo.ioe.util.ObjectID;
+import jlo.ioe.util.Opt;
 
-import java.util.List;
 import java.util.Arrays;
-import java.util.Map;
-import java.util.HashMap;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by IntelliJ IDEA.
@@ -20,7 +22,7 @@ import java.util.Date;
  * Date: Apr 4, 2007
  * Time: 6:20:44 PM
  */
-public abstract class DataObject {
+public abstract class DataObject implements Identifiable {
 	public static final String kOwner = "owner";
 	public static final String kCreated = "created";
 	public static final String kModified = "modified";
@@ -33,9 +35,9 @@ public abstract class DataObject {
 	public static final List<String> kBaseMetadata = Arrays.asList(kOwner, kCreated, kModified, kAccessed, kModifier, kShared, kKind, kTitle, kDescription);
 
 
-	public static final Class Modified = ModifiedMsg.class;
+	public static final Message Modified = new ModifiedMsg(null);
 	static class ModifiedMsg extends AbstractMessage {
-		public ModifiedMsg(Object sender) {
+		public ModifiedMsg( Object sender) {
 			super(sender);
 		}
 	}
@@ -63,15 +65,23 @@ public abstract class DataObject {
 		Object o = metadata.get(key);
 		return (o != null) ? Opt.some((T)o) : Opt.<T>none();
 	}
+	public ObjectID getObjectID() { return oid; }
+	public <T extends DataObject> Ref<T> getRef() { return new Ref(this); }
 
 	abstract Object kind();
 	abstract Object view();
 
 	protected void addField(String name, Field f) {
 		instanceFields.put(name, f);
-		messenger.subscribe(f,Field.Changed,new F.lambda<Object>(){protected Object code() {
+		messenger.subscribe(getRef(),Field.Changed,new F.lambda<Object>(){protected Object code() {
 		    meta(kModified,new Date());
 			return MessageService.singleton().publish(new ModifiedMsg(DataObject.this));
 		}});
+	}
+
+
+	@Override
+	public String toString() {
+		return kind().toString() + "(" + ((Date)meta(kCreated).get(null)) + ")";
 	}
 }
