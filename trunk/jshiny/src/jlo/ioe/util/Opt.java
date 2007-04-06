@@ -1,6 +1,7 @@
 package jlo.ioe.util;
 
-import static jlo.ioe.util.F.*;
+import static jlo.ioe.util.F.lambda;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Copyright © 2007 imaginaryday.com (jlo)<br>
@@ -44,7 +45,7 @@ public abstract class Opt<T> {
 	}
 	static class Some<T> extends Opt<T> {
 		private T obj;
-		public Some(T obj) {
+		public Some(@NotNull T obj) {
 			this.obj = obj;
 		}
 		public <R> R match(lambda<R> some, lambda<R> none) throws RuntimeException {

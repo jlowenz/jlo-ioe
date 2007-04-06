@@ -1,8 +1,8 @@
 package jlo.ioe.util;
 
-import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -20,7 +20,7 @@ public class F {
 		r call(Object ... args);
 	}
 
-	public static abstract class lambda<r> implements Callable<r>
+	public static abstract class lambda<r> implements Callable<r>, java.io.Serializable
 	{
 		protected static final String ARGUMENT_SIZE_MISMATCH = "Argument size mismatch: you either have too many or too little arguments";
 		protected static final String ARGUMENT_APPLICATION_OVERFLOW = "Can't apply more arguments than parameter count!";
@@ -80,8 +80,8 @@ public class F {
 
 	/**
 	 * Add to collection and return added value.
-	 * @param c
-	 * @param elt
+	 * @param c the collection
+	 * @param elt the alements to add
 	 * @return the first element value added to the collection
 	 */
 	public static <r> r addr(Collection<r> c, r ... elt) {

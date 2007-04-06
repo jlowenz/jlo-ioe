@@ -1,5 +1,9 @@
 package jlo.ioe.messaging;
 
+import jlo.ioe.util.F;
+import jlo.ioe.util.Identifiable;
+import jlo.ioe.util.Tuple;
+
 /**
  * Created by IntelliJ IDEA.
  * User: jlowens
@@ -10,7 +14,6 @@ public class MessageService {
 	public static final MessageService _instance = new MessageService();
 
 	private MessageService() {
-
 	}
 
 	// add messages to a thread safe priority queue
@@ -21,12 +24,16 @@ public class MessageService {
 		return this;
 	}
 
-	public void subscribe(Object sender, Class msgClass) {
+	public <T extends Identifiable> void subscribe(T sender, Class msgClass, F.lambda action) {
 
 	}
 
-	public void subscribe(Class msgClass) {
+	public void subscribe(Class msgClass, F.lambda action) {
 
+	}
+
+	public void subscribe(Class msgClass, Tuple params, F.lambda action) {
+		
 	}
 
 	public static MessageService singleton() {
