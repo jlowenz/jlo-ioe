@@ -13,7 +13,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public abstract class LazyRef<T extends Identifiable> implements Serializable {
 	transient private Opt<T> object = Opt.none();
 	private ObjectID oid;
-	private Lock lock = new ReentrantLock();
+	transient private Lock lock = new ReentrantLock();
 
 	public LazyRef(T object) {
 		this.object = Opt.some(object);
@@ -26,14 +26,14 @@ public abstract class LazyRef<T extends Identifiable> implements Serializable {
 	}
 
 	// eagerly created, but lazily executed
-	private F.lambda<Opt<T>> loader = new F.lambda<Opt<T>>(){protected Opt<T> code() {
+	private F.lambda<Opt<T>> loader = new F.lambda0<Opt<T>>(){protected Opt<T> code() {
 		return loadObject(oid);
 	}};
 
 	public T get() {
 		lock.lock();
 		try {
-			return (object = object.orElse(loader)).get(null);
+			return (object = object.orElse(loader)).get((T)null);
 		} finally { lock.unlock(); }
 	}
 
@@ -45,6 +45,6 @@ public abstract class LazyRef<T extends Identifiable> implements Serializable {
 		return oid;	
 	}
 
-	abstract boolean isLoaded(ObjectID oid);
-	abstract Opt<T> loadObject(ObjectID oid);
+	abstract protected boolean isLoaded(ObjectID oid);
+	abstract protected Opt<T> loadObject(ObjectID oid);
 }
