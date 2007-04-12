@@ -1,12 +1,13 @@
 package jlo.ioe.data;
 
+import jlo.ioe.View;
 import jlo.ioe.data.field.Field;
 import jlo.ioe.messaging.AbstractMessage;
-import jlo.ioe.messaging.Message;
 import jlo.ioe.messaging.MessageService;
 import jlo.ioe.messaging.SubscriberDelegate;
 import jlo.ioe.util.F;
 import jlo.ioe.util.Identifiable;
+import jlo.ioe.util.LazyRef;
 import jlo.ioe.util.ObjectID;
 import jlo.ioe.util.Opt;
 
@@ -35,7 +36,10 @@ public abstract class DataObject implements Identifiable {
 	public static final List<String> kBaseMetadata = Arrays.asList(kOwner, kCreated, kModified, kAccessed, kModifier, kShared, kKind, kTitle, kDescription);
 
 
-	public static final Message Modified = new ModifiedMsg(null);
+	public static final Class<ModifiedMsg> Modified = ModifiedMsg.class;
+
+	public abstract View getDefaultView();
+
 	static class ModifiedMsg extends AbstractMessage {
 		public ModifiedMsg( Object sender) {
 			super(sender);
@@ -66,14 +70,14 @@ public abstract class DataObject implements Identifiable {
 		return (o != null) ? Opt.some((T)o) : Opt.<T>none();
 	}
 	public ObjectID getObjectID() { return oid; }
-	public <T extends DataObject> Ref<T> getRef() { return new Ref(this); }
+	public <T extends DataObject> LazyRef<T> getRef() { return null; }
 
 	abstract Object kind();
 	abstract Object view();
 
 	protected void addField(String name, Field f) {
 		instanceFields.put(name, f);
-		messenger.subscribe(getRef(),Field.Changed,new F.lambda<Object>(){protected Object code() {
+		messenger.subscribe(getRef(),Field.Changed,new F.lambda0<Object>(){protected Object code() {
 		    meta(kModified,new Date());
 			return MessageService.singleton().publish(new ModifiedMsg(DataObject.this));
 		}});

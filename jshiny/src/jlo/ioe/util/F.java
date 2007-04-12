@@ -32,11 +32,14 @@ public class F {
 			for (Object arg : o) { _args.add(arg); }
 			return (l)this;
 		}
+	}
+
+	public static abstract class lambda0<r> extends lambda<r> {
+		protected abstract r code();
 		public r call(Object ... args) {
 			assert args.length == 0 : ARGUMENT_SIZE_MISMATCH;
 			return code();
 		}
-		protected abstract r code();
 	}
 
 	public static abstract class lambda1<r,a> extends lambda<r>

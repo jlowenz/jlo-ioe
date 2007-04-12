@@ -1,8 +1,11 @@
 package jlo.ioe.messaging;
 
 import jlo.ioe.util.F;
-import jlo.ioe.util.Identifiable;
 import jlo.ioe.util.Tuple;
+
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 /**
  * Created by IntelliJ IDEA.
@@ -12,8 +15,11 @@ import jlo.ioe.util.Tuple;
  */
 public class MessageService {
 	public static final MessageService _instance = new MessageService();
+	private ConcurrentLinkedQueue<Message> queue;
+	private Executor threads = Executors.newCachedThreadPool();
 
 	private MessageService() {
+		
 	}
 
 	// add messages to a thread safe priority queue
@@ -21,10 +27,11 @@ public class MessageService {
 	// drop messages that do not have listeners
 
 	public MessageService publish(Message m) {
+		queue.offer(m);
 		return this;
 	}
 
-	public <T extends Identifiable> void subscribe(T sender, Class msgClass, F.lambda action) {
+	public <T> void subscribe(T sender, Class msgClass, F.lambda action) {
 
 	}
 
@@ -36,7 +43,27 @@ public class MessageService {
 		
 	}
 
+	public <T> void subscribe(T t, Class msgClass, Tuple filter, F.lambda lambda) {
+
+	}
+
 	public static MessageService singleton() {
 		return _instance;
+	}
+
+	private static class Runner implements Runnable {
+		private F.lambda fun;
+
+		public void setFun(F.lambda fun) {
+			this.fun = fun;
+		}
+
+		public void apply(Object ... args) {
+			fun.apply(args);
+		}
+
+		public void run() {
+			fun.call();
+		}
 	}
 }
