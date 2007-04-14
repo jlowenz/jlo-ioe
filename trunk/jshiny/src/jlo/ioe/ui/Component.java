@@ -28,12 +28,12 @@ class Component<T extends JComponent> implements IComponent<T> {
 	public Component(T comp) {
 		this.comp = comp;
 		ci = new CommandInterceptor();
-		if (this instanceof ActionCapable) {
-			final ActionCapable ac = (ActionCapable)this;
+		if (comp instanceof ActionCapable) {
+			final ActionCapable ac = (ActionCapable)comp;
 			actions = new ActionsHandler() {
 				ActionListener al = new ActionListener() {
 					public void actionPerformed(ActionEvent actionEvent) {
-						MessageService.singleton().publish(new Action(Component.this, actionEvent));
+						MessageService.singleton().publish(new Action(Component.this.comp, actionEvent));
 					}
 				};
 				public void areHandled() {
@@ -86,6 +86,8 @@ class Component<T extends JComponent> implements IComponent<T> {
 		private long lastTime = System.currentTimeMillis();
 
 		public CommandInterceptor() {
+			System.out.println("added command interceptor: " + comp);
+			//new Throwable().printStackTrace();
 			comp.addKeyListener(new KeyAdapter() {
 				@Override public void keyPressed(KeyEvent e) {
 					KeyStroke ks = KeyStroke.getKeyStrokeForEvent(e);
@@ -97,6 +99,7 @@ class Component<T extends JComponent> implements IComponent<T> {
 						Environment.singleton().prevSheet();
 						lastTime = 0;
 					} else if (s.equals("meta pressed META")) {
+						System.out.println("meta pressed META");
 						long currTime = System.currentTimeMillis();
 						if ((currTime - lastTime) < DIFF) {
 							Environment.singleton().commandRequested();

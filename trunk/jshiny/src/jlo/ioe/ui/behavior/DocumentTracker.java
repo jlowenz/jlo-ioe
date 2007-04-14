@@ -1,6 +1,7 @@
 package jlo.ioe.ui.behavior;
 
 import jlo.ioe.messaging.AbstractMessageWithParams;
+import jlo.ioe.messaging.MessageService;
 import jlo.ioe.util.Tuple;
 
 import javax.swing.event.DocumentEvent;
@@ -23,21 +24,19 @@ public class DocumentTracker {
 		}
 	}
 
-	private JTextComponent comp;
-	public DocumentTracker(JTextComponent comp) {
-		this.comp = comp;
-		this.comp.getDocument().addDocumentListener(new DocumentListener() {
+	public DocumentTracker(final JTextComponent comp) {
+		comp.getDocument().addDocumentListener(new DocumentListener() {
 
 			public void insertUpdate(DocumentEvent documentEvent) {
-
+				MessageService.singleton().publish(new DocumentChangedMsg(comp, Tuple.one(documentEvent)));
 			}
 
 			public void removeUpdate(DocumentEvent documentEvent) {
-
+				MessageService.singleton().publish(new DocumentChangedMsg(comp, Tuple.one(documentEvent)));
 			}
 
 			public void changedUpdate(DocumentEvent documentEvent) {
-
+				MessageService.singleton().publish(new DocumentChangedMsg(comp, Tuple.one(documentEvent)));				
 			}
 		});
 	}

@@ -3,7 +3,6 @@ package jlo.ioe.data;
 import jlo.ioe.Command;
 import jlo.ioe.Environment;
 import jlo.ioe.Suggestions;
-import jlo.ioe.VocabularyTerm;
 import jlo.ioe.messaging.MessageService;
 import jlo.ioe.messaging.SubscriberDelegate;
 import jlo.ioe.ui.Label;
@@ -19,6 +18,7 @@ import jlo.ioe.util.Tuple;
 import jlo.ioe.util.Util;
 import org.jdesktop.layout.GroupLayout;
 
+import javax.swing.JLayeredPane;
 import javax.swing.JTextField;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
@@ -33,7 +33,6 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.event.KeyEvent;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -45,61 +44,55 @@ import java.util.List;
  */
 public class CommandInterface {
 
-	private TextField commandField = new TextField() {
-		KeyTracker kt = new KeyTracker<JTextField>(this);
-		DocumentTracker dt = new DocumentTracker(this);
-		{
-			actions().areHandled();
-			setBorder(new CompoundBorder(new LineBorder(Color.black,1), new EmptyBorder(2,2,2,2)));
-		}
+	private static final CommandInterface _instance = new CommandInterface();
 
-		@Override
-		public String toString() {
-			return "commandField";
-		}
-	};
-	private Opt<Command> currentCommand;
-	private Panel commandPanel = new Panel() {
-		SubscriberDelegate subscriber = new SubscriberDelegate();
-		{
-			AncestorTracker at = new AncestorTracker(this);
-			setPreferredSize(new Dimension(400,75));
-			setSize(getPreferredSize());
-			setOpaque(false);
-			setLayout(new BorderLayout());
-			setBorder(new EmptyBorder(10,10,10,10));
-			initComponents();
+	public static CommandInterface singleton() {
+		return _instance;
+	}
 
-			MessageService.singleton().subscribe(
-					commandField,
-					Action.class,
-					new F.lambda0<Object>(){protected Object code() {
-						return currentCommand.match(
-								new F.lambda1<Object,Command>(){protected Object code(Command p) {
-									p.termCompleted(suggestionMatches());
-									p.execute();
-									currentCommand = Opt.none();
-									return null;
-								}},
-								new F.lambda1<Object, Command>(){protected Object code(Command p) {
-									return null;
-								}});
-					}});
-			MessageService.singleton().subscribe(
-					commandField,
-					DocumentTracker.DocumentChanged,
-					new F.lambda1<Object, Tuple.One<DocumentEvent>>(){protected Object code(Tuple.One<DocumentEvent> p) {
+	private CommandInterface() {
+		MessageService.singleton().subscribe(
+				commandPanel,
+				AncestorTracker.Ancestor,
+				Tuple.one("added"),
+				new F.lambda1<Object, Tuple.One<String>>(){protected Object code(Tuple.One<String> p) {
+					commandField.setText("");
+					commandField.requestFocusInWindow();
+					return null;
+				}}
+		);
+		MessageService.singleton().subscribe(
+				commandField,
+				Action.class,
+				new F.lambda0<Object>(){protected Object code() {
+					System.out.println("action");
+					currentCommand.ifSet(
+							new F.lambda1<Object,Command>(){protected Object code(Command p) {
+								p.termCompleted(suggestionMatches());
+								p.execute();
+								currentCommand = Opt.none();
+								return null;
+							}});
+					Environment.singleton().commandRequested(); return null;
+				}});
+		MessageService.singleton().subscribe(
+				commandField,
+				DocumentTracker.DocumentChanged,
+				new F.lambda1<Object, Tuple.One<DocumentEvent>>(){protected Object code(Tuple.One<DocumentEvent> p) {
+					try {
 						final String txt = commandField.getText();
 						if (txt.length() > 0) {
-							List<String> words = Arrays.asList(txt.split(" "));
+							LinkedList<String> words = Util.toList(txt.split(" "));
 							if (!words.isEmpty()) {
-								final String lastFragment = words.get(words.size()-1);
+								final String lastFragment = words.getLast();
 								currentCommand.match(
 										new F.lambda1<Object,Command>(){protected Object code(Command p) {
+											System.out.println("some command");
 											p.updateFragment(lastFragment);
 											return null;
 										}},
-										new F.lambda1<Object, Command>(){protected Object code(Command p) {
+										new F.lambda1<Object,Command>(){protected Object code(Command p) {
+											System.out.println("none command");
 											currentCommand = Opt.some(new Command());
 											currentCommand.get(null).updateFragment(txt);
 											return null;
@@ -110,30 +103,61 @@ public class CommandInterface {
 						} else {
 							updateSuggestions(txt);
 						}
-						return null;
-					}}
-			);
-			MessageService.singleton().subscribe(
-					commandField,
-					KeyTracker.Key,
-					new F.lambda1<Object, Tuple.One<KeyEvent>>(){protected Object code(Tuple.One<KeyEvent> p) {
-						switch (p.first().getKeyCode()) {
-							case KeyEvent.VK_ESCAPE:
-								Environment.singleton().commandRequested();
-								break;
-							case KeyEvent.VK_SPACE:
-								currentCommand.ifSet(new F.lambda1<Object,Command>(){protected Object code(Command p) {
-									p.termCompleted(suggestionMatches());
-									return null;
-								}});
-								break;
-							case KeyEvent.VK_TAB:
-								selectSuggestedValue();
-								break;
-						}
-						return null;
-					}}
-			);
+					} catch (Throwable e) {
+						e.printStackTrace(System.err);
+					}
+					return null;
+				}}
+		);
+		MessageService.singleton().subscribe(
+				commandField,
+				KeyTracker.Key,
+				new F.lambda1<Object, Tuple.One<KeyEvent>>(){protected Object code(Tuple.One<KeyEvent> p) {
+					switch (p.first().getKeyCode()) {
+						case KeyEvent.VK_ESCAPE:
+							Environment.singleton().commandRequested();
+							break;
+						case KeyEvent.VK_SPACE:
+							currentCommand.ifSet(new F.lambda1<Object,Command>(){protected Object code(Command p) {
+								p.termCompleted(suggestionMatches());
+								return null;
+							}});
+							break;
+						case KeyEvent.VK_TAB:
+							selectSuggestedValue();
+							break;
+					}
+					return null;
+				}}
+		);
+		commandField.setText("");
+	}
+
+	private TextField commandField = new TextField() {
+		KeyTracker kt = new KeyTracker<JTextField>(this);
+		DocumentTracker dt = new DocumentTracker(this);
+		{
+			initalFocus();
+			actions().areHandled();
+			setBorder(new CompoundBorder(new LineBorder(Color.black,1), new EmptyBorder(2,2,2,2)));
+		}
+
+		@Override
+		public String toString() {
+			return "commandField";
+		}
+	};
+	private Opt<Command> currentCommand = Opt.none();
+	private Panel commandPanel = new Panel() {
+		SubscriberDelegate subscriber = new SubscriberDelegate();
+		{
+			AncestorTracker at = new AncestorTracker(this);
+			setPreferredSize(new Dimension(400,75));
+			setSize(getPreferredSize());
+			setOpaque(false);
+			setLayout(new BorderLayout());
+			setBorder(new EmptyBorder(10,10,10,10));
+			initComponents();
 		}
 
 		private void initComponents() {
@@ -187,6 +211,14 @@ public class CommandInterface {
 			g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
 			g2.fillRoundRect(0,0,getWidth(),getHeight(),10,10);
 		}
+
+
+		@Override
+		protected void paintChildren(Graphics graphics) {
+			Graphics2D g2 = (Graphics2D) graphics;
+			g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.9f));
+			super.paintChildren(g2);
+		}
 	};
 
 	private void selectSuggestedValue() {
@@ -207,7 +239,7 @@ public class CommandInterface {
 	private List<VocabularyTerm> suggestionMatches() {
 		String frag = commandField.getText();
 		if (frag.length() > 0) {
-			String lastFragment = Util.toList(frag.split(" ")).getLast();
+			String lastFragment = Util.toList(frag.split(" ")).peekLast();
 			return Vocabulary.matchingTerms(lastFragment);
 		} else {
 			return new LinkedList<VocabularyTerm>();
@@ -215,4 +247,11 @@ public class CommandInterface {
 	}
 
 
+	public Panel component() {
+		return commandPanel;
+	}
+
+	public int level() {
+		return JLayeredPane.MODAL_LAYER;
+	}
 }

@@ -56,9 +56,12 @@ public class Sheet extends Panel implements Identifiable {
 	public Sheet(Screen screen, final DataObject obj) {
 		this.screen = screen;
 		this.obj = obj;
-		splits = new Split<Ref<DataObject>>(Opt.some(new Ref<DataObject>(obj)), Aspect.Horizontal, 1.0, new F.lambda1<IComponent, Ref<DataObject>>(){protected View code(Ref<DataObject> p) {
-			return p.get().getDefaultView();
-		}});
+		splits = new Split<Ref<DataObject>>(Opt.some(new Ref<DataObject>(obj)),
+				Aspect.Horizontal,
+				1.0,
+				new F.lambda1<IComponent, Ref<DataObject>>(){protected View code(Ref<DataObject> p) {
+					return p.get().getDefaultView();
+				}});
 		splitPane = new Splitter();
 		add(splitPane);
 		splitPane.resplit(splits);

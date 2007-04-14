@@ -1,6 +1,7 @@
 package jlo.ioe.ui;
 
 import jlo.ioe.messaging.AbstractMessage;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.ListModel;
 import javax.swing.event.ListDataEvent;
@@ -44,5 +45,5 @@ public abstract class ListDelegate<A> implements ListModel {
 		listeners.remove(listDataListener);
 	}
 
-	public abstract void update(java.util.List<A> v);
+	public abstract void update(@NotNull java.util.List<A> v);
 }

@@ -1,16 +1,19 @@
 package jlo.ioe;
 
+import jlo.ioe.data.CommandInterface;
 import jlo.ioe.data.DataObject;
 import jlo.ioe.ui.LayeredPane;
 import jlo.ioe.ui.Panel;
 import jlo.ioe.ui.RootPane;
 import jlo.ioe.util.F;
+import jlo.ioe.util.FocusOwnerTracker;
 import jlo.ioe.util.Opt;
 
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import javax.swing.border.LineBorder;
+import java.awt.AWTEvent;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.DisplayMode;
@@ -34,6 +37,7 @@ public class Screen extends JFrame {
 	SheetSelector sheetSelector = new SheetSelector(width());
 	boolean commandOn = false;
 	ScreenState sstate;
+	private FocusOwnerTracker fot;
 
 	public Screen(String name) {
 		sstate = new ScreenState(name);
@@ -41,14 +45,25 @@ public class Screen extends JFrame {
 	}
 
 	private void setup() {
-		setRootPane(new RootPane());
+		RootPane rp = new RootPane();
+		fot = new FocusOwnerTracker(this) {
+			public void focusLost() {
+				System.out.println("lost focus");
+			}
+
+			public void focusGained() {
+				System.out.println("gained focus");
+			}
+		};
+		setRootPane(rp);
 		setLayeredPane(new LayeredPane());
 		setContentPane(new Panel());
 		_layout();
-		setFullscreen(true);
+		//setFullscreen(true);
 		setVisible(true);
+		enableEvents(AWTEvent.KEY_EVENT_MASK);
 		setFocusable(true);
-		((JComponent)getContentPane()).grabFocus();
+		getContentPane().requestFocusInWindow();
 	}
 
 	private void setFullscreen(boolean b) {
@@ -120,19 +135,49 @@ public class Screen extends JFrame {
 	}
 
 	private void removeCommand() {
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				
-			}
-		});
+		System.out.println("removeCommand");
+		SwingUtilities.invokeLater(new Runnable() {public void run() {
+			getLayeredPane().remove(CommandInterface.singleton().component());
+			CommandInterface.singleton().component().setVisible(false);
+			validate();
+			repaint();
+			getContentPane().requestFocusInWindow();
+		}});
 	}
 
 	private void showCommand() {
-
+		System.out.println("showCommand");
+		SwingUtilities.invokeLater(new Runnable() {public void run() {
+			CommandInterface.singleton().component().setVisible(true);
+			moveToCenter(CommandInterface.singleton().component());
+			getLayeredPane().add(CommandInterface.singleton().component(),CommandInterface.singleton().level());
+			validate();
+			repaint();
+		}});
 	}
 
-	public void display(Sheet sheet) {
-
+	public void display(final Sheet sheet) {
+		Runnable displayer = new Runnable() {public void run() {
+			sstate.currentSheet.match(
+					new F.lambda1<Object,Sheet>(){protected Object code(Sheet p) {
+						center.remove(p); p.setVisible(false); return null;
+					}},
+					new F.lambda1<Object, Sheet>(){protected Object code(Sheet p) {
+						return null;
+					}}
+			);
+			sheet.setVisible(true);
+			center.add(sheet);
+			center.invalidate();
+			validate();
+			repaint();
+			sstate.currentSheet = Opt.some(sheet);
+		}};
+		if (Thread.currentThread().getName().startsWith("AWT")) {
+			displayer.run();
+		} else {
+			SwingUtilities.invokeLater(displayer);
+		}
 	}
 
 	public static class ScreenState implements Serializable {

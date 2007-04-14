@@ -13,7 +13,6 @@ import java.awt.event.ComponentEvent;
  * Time: 8:54:23 PM<br>
  */
 public class TextComponent<T extends JTextComponent> extends Component<T> implements ITextComponent<T> {
-	private IComponent<T> comp = new Component<T>((T) get());
 
 	public TextComponent(T t) {
 		super(t);
