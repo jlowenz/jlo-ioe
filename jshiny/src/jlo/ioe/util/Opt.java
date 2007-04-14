@@ -30,8 +30,8 @@ public abstract class Opt<T> implements Serializable {
 	static class None<T> extends Opt<T> {
 		public <R> R match(F.lambda1<R,T> some, F.lambda1<R,T> none) {
 			try {
-				return none.call();
-			} catch (Exception e) {
+				return none.call((T)null);
+			} catch (Throwable e) {
 				throw new RuntimeException(e);
 			}
 		}
@@ -57,7 +57,7 @@ public abstract class Opt<T> implements Serializable {
 		public <R> R match(F.lambda1<R,T> some, F.lambda1<R,T> none) throws RuntimeException {
 			try {
 				return some.call(obj);
-			} catch (Exception e) {
+			} catch (Throwable e) {
 				throw new RuntimeException(e);
 			}
 		}

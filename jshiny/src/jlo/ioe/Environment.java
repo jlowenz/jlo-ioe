@@ -3,6 +3,7 @@ package jlo.ioe;
 import jlo.ioe.data.DataObject;
 import jlo.ioe.data.ObjectService;
 import jlo.ioe.data.Vocabulary;
+import jlo.ioe.util.FocusOwnerTracker;
 
 /**
  * Copyright © 2007 imaginaryday.com (jlo)<br>
@@ -13,10 +14,19 @@ import jlo.ioe.data.Vocabulary;
 public class Environment {
 
 	private static final Environment _instance = new Environment();
+	private FocusOwnerTracker fot;
 
 	public Environment() {
 		Vocabulary.load();
 		screen = loadScreen();
+		fot = new FocusOwnerTracker(screen) {
+			public void focusLost() {
+				System.out.println("focusLost");
+			}
+			public void focusGained() {
+				System.out.println("focusGained");
+			}
+		};
 		System.out.println("Hello World!");
 	}
 
@@ -24,7 +34,7 @@ public class Environment {
 	public Screen loadScreen()
 	{
 		if (ObjectService.singleton().numScreens() < 1) {
-			Screen screen = new Screen();
+			Screen screen = new Screen("");
 			ObjectService.singleton().addScreen(screen);
 			return screen;
 		} else {
@@ -46,7 +56,7 @@ public class Environment {
 	public void commandRequested() { screen.commandRequested(); }
 
 	public static void main(String[] args) {
-		System.out.println("Hello World!");
+
 	}
 
 	public static Environment singleton() {

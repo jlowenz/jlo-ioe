@@ -8,7 +8,7 @@ import javax.swing.JTextField;
  * Date: Apr 7, 2007<br>
  * Time: 10:26:36 PM<br>
  */
-public class TextField extends JTextField implements ITextComponent<JTextField> {
+public class TextField extends JTextField implements ITextComponent<JTextField>, ActionCapable {
 	ITextComponent<JTextField> comp = new TextComponent<JTextField>(this);
 
 	public ITextComponent<JTextField> initalFocus() {

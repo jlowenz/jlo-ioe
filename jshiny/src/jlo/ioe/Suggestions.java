@@ -1,8 +1,10 @@
 package jlo.ioe;
 
+import jlo.ioe.data.VocabularyTerm;
 import jlo.ioe.ui.List;
 import jlo.ioe.ui.ListDelegate;
 import jlo.ioe.ui.Panel;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
@@ -13,6 +15,7 @@ import java.awt.Container;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.util.LinkedList;
 
 /**
  * Copyright © 2007 imaginaryday.com (jlo)<br>
@@ -58,7 +61,7 @@ public class Suggestions {
 		}
 	};
 	private class Delegate extends ListDelegate<VocabularyTerm> {
-		private java.util.List<VocabularyTerm> data;
+		private java.util.List<VocabularyTerm> data = new LinkedList<VocabularyTerm>();
 
 		public Delegate(List l) {
 			super(l);
@@ -72,7 +75,7 @@ public class Suggestions {
 			return data.get(i);
 		}
 
-		public void update(java.util.List<VocabularyTerm> l) { data = l; fireUpdate(data); }
+		public void update(@NotNull java.util.List<VocabularyTerm> l) { data = l; fireUpdate(data); }
 	}
 	private ListDelegate<VocabularyTerm> model = new Delegate(uilist);
 	{ uilist.setDelegate(model); }

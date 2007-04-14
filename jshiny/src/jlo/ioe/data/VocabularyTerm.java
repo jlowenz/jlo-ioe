@@ -1,4 +1,4 @@
-package jlo.ioe;
+package jlo.ioe.data;
 
 /**
  * Copyright © 2007 imaginaryday.com (jlo)<br>

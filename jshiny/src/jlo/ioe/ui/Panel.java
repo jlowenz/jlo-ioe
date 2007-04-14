@@ -9,6 +9,7 @@ import javax.swing.JPanel;
  * Time: 5:34:27 PM<br>
  */
 public class Panel extends JPanel implements IComponent<JPanel> {
+	private IComponent<JPanel> comp = new Component<JPanel>(this);
 
 	public Panel() {
 		preferredSize(100,20);
@@ -50,8 +51,6 @@ public class Panel extends JPanel implements IComponent<JPanel> {
 	public ActionsHandler actions() {
 		return comp.actions();
 	}
-
-	private IComponent<JPanel> comp = new Component<JPanel>(this);
 
 	public JPanel get() {
 		return comp.get();

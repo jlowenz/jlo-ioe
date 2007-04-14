@@ -72,6 +72,22 @@ public abstract class Tuple implements Serializable {
 		public boolean match(Tuple t) {
 			return t.match1(this);
 		}
+
+
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (o == null || getClass() != o.getClass()) return false;
+
+			One one = (One) o;
+
+			if (A != null ? !A.equals(one.A) : one.A != null) return false;
+
+			return true;
+		}
+
+		public int hashCode() {
+			return (A != null ? A.hashCode() : 0);
+		}
 	}
 
 	public static class Two<a,b> extends One<a>
@@ -98,6 +114,25 @@ public abstract class Tuple implements Serializable {
 		@Override
 		public boolean match(Tuple t) {
 			return t.match2(this);
+		}
+
+
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (o == null || getClass() != o.getClass()) return false;
+			if (!super.equals(o)) return false;
+
+			Two two = (Two) o;
+
+			if (B != null ? !B.equals(two.B) : two.B != null) return false;
+
+			return true;
+		}
+
+		public int hashCode() {
+			int result = super.hashCode();
+			result = 31 * result + (B != null ? B.hashCode() : 0);
+			return result;
 		}
 	}
 
@@ -131,6 +166,25 @@ public abstract class Tuple implements Serializable {
 		@Override
 		public boolean match(Tuple t) {
 			return t.match3(this);
+		}
+
+
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (o == null || getClass() != o.getClass()) return false;
+			if (!super.equals(o)) return false;
+
+			Three three = (Three) o;
+
+			if (C != null ? !C.equals(three.C) : three.C != null) return false;
+
+			return true;
+		}
+
+		public int hashCode() {
+			int result = super.hashCode();
+			result = 31 * result + (C != null ? C.hashCode() : 0);
+			return result;
 		}
 	}
 
@@ -169,6 +223,24 @@ public abstract class Tuple implements Serializable {
 		@Override
 		public boolean match4(Four t) {
 			return super.match3((Three)t) && check(fourth(), t.fourth());
+		}
+
+
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (o == null || getClass() != o.getClass()) return false;
+			if (!super.equals(o)) return false;
+
+			Four four = (Four) o;
+
+			return !(D != null ? !D.equals(four.D) : four.D != null);
+
+		}
+
+		public int hashCode() {
+			int result = super.hashCode();
+			result = 31 * result + (D != null ? D.hashCode() : 0);
+			return result;
 		}
 	}
 
@@ -213,6 +285,25 @@ public abstract class Tuple implements Serializable {
 		@Override
 		public boolean match5(Five t) {
 			return super.match4((Four)t) && check(fifth(),t.fifth());
+		}
+
+
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (o == null || getClass() != o.getClass()) return false;
+			if (!super.equals(o)) return false;
+
+			Five five = (Five) o;
+
+			if (E != null ? !E.equals(five.E) : five.E != null) return false;
+
+			return true;
+		}
+
+		public int hashCode() {
+			int result = super.hashCode();
+			result = 31 * result + (E != null ? E.hashCode() : 0);
+			return result;
 		}
 	}
 

@@ -1,7 +1,5 @@
 package jlo.ioe.data;
 
-import jlo.ioe.VocabularyTerm;
-
 import java.util.List;
 
 /**
