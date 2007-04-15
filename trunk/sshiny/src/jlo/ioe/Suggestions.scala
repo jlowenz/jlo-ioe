@@ -4,6 +4,7 @@ import jlo.ioe.command._
 import jlo.ioe.ui._
 import java.awt.Container
 import javax.swing.SwingUtilities
+import scala.collection.immutable.{Set,HashSet}
 
 object Suggestions {
   private val uilist = new SList[VocabularyTerm] {
@@ -39,6 +40,10 @@ object Suggestions {
     }
   }  
   class Delegate extends SListDelegate[VocabularyTerm] {
+    private var obsListeners : Set[Observer] = new HashSet[Observer]()
+    def listeners = obsListeners
+    def listeners_=(o:Set[Observer]) = obsListeners = o
+
     var data = List[VocabularyTerm]()
     def numElements = data.length
     def elementAt(i:int) = data(i)

@@ -43,5 +43,5 @@ trait TextComponent extends JTextComponent with Component {
 } 
 
 class TextField extends JTextField with TextComponent with ActionCapable {
-  
+  override def toString = "TextField(" + getText() + ")"
 }

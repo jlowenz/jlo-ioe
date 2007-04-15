@@ -14,14 +14,14 @@ package command {
   }
 }
 
-object Email extends DOStorage[Email] {
-  val db = createDB("Email")
+object EmailStorage extends DOStorage[Email] {
+  val db = createDB("Email", classOf[Email])
   def defaultView(e:Email) = new EmailView(e)
 }
 
 class Email extends DataObject {
-  val to = Text(this, "to", "") 
-  val body = Text(this, "body", "")
+  val to = new Text(this, "to", "") 
+  val body = new Text(this, "body", "")
   var defView : Option[View] = None
 
   listenTo(to) event {
@@ -31,11 +31,11 @@ class Email extends DataObject {
     }
   }
 
-  def storage = Email
+  def storage = EmailStorage
   def kind = "Email"
   def defaultView = defView match {
     case Some(v) => v
-    case None => { defView = Some(Email.defaultView(this)); defView.get }
+    case None => { defView = Some(storage.defaultView(this)); defView.get }
   }
 }
 

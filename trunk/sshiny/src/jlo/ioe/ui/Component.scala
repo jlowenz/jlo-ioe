@@ -4,6 +4,7 @@ import java.awt.event._
 import javax.swing.JComponent
 import javax.swing.border.EmptyBorder
 import java.awt.Dimension
+import scala.collection.immutable.{HashSet,Set,Map,HashMap}
 
 package behavior {
   case class Action(e:ActionEvent) extends ObservableEvent
@@ -45,43 +46,14 @@ trait Component extends JComponent with CommandInterceptor with Observable {
     })
   }
 
-  override def setSize(dim:Dimension) : Unit = {
-    if (dim.getWidth() <= 0 || dim.getHeight() <= 0) {
-      new Throwable().printStackTrace()
-    }
-    super.setSize(dim)
-  }
-  override def setSize(w:int,h:int) : Unit = {
-    if (w <= 0 || h <= 0) {
-      new Throwable().printStackTrace()
-    }
-    super.setSize(w,h)
-  }
-  override def resize(dim:Dimension) : Unit = {
-    if (dim.getWidth() <= 0 || dim.getHeight() <= 0) {
-      new Throwable().printStackTrace()
-    }
-    super.resize(dim)
-  }
-  override def resize(w:int,h:int) : Unit = {
-    if (w <= 0 || h <= 0) {
-      new Throwable().printStackTrace()
-    }
-    super.resize(w,h)
-  }
+  var obsHandlers : Map[Observable,List[EventHandler]] = new HashMap[Observable,List[EventHandler]]()
+  def handlers = obsHandlers
+  def handlers_=(h:Map[Observable,List[EventHandler]]) = obsHandlers = h
 
-  override def setBounds(x:int,y:int,w:int,h:int) : Unit = {
-    if (w <= 0 || h <= 0) {
-      new Throwable().printStackTrace()
-    }    
-    super.setBounds(x,y,w,h);
-  }
-  override def setBounds(r:java.awt.Rectangle) : Unit = {
-    if (r.width <= 0 || r.height <= 0) {
-      new Throwable().printStackTrace()
-    }    
-    super.setBounds(r);
-  }
+  var obsListeners : Set[Observer] = new HashSet[Observer]()
+  def listeners = obsListeners
+  def listeners_=(o:Set[Observer]) = obsListeners = o
+
 
   // bindings
   def update(v:Any) = {}
@@ -98,6 +70,7 @@ trait Component extends JComponent with CommandInterceptor with Observable {
 
   // CONVERSIONS
   implicit def doubleToInt(x:double) : int = x.asInstanceOf[int]
+
 }
 
 class Viewport extends javax.swing.JViewport with Component {}

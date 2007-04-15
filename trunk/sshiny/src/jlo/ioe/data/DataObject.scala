@@ -2,16 +2,18 @@ package jlo.ioe.data
 
 import java.util.Date
 import java.rmi.server.UID
-import scala.collection.immutable.TreeMap
+import scala.collection.immutable.{TreeMap,Map,HashMap,Set,HashSet}
 import scala.Predef.{boolean,int,byte}
 import scala.Predef.identity
 import scala.Predef.boolean2Boolean
 import java.io.{ObjectOutputStream,ObjectInputStream,
 		ByteArrayOutputStream,ByteArrayInputStream,
 		DataOutputStream,DataInputStream,
+		ObjectInput,ObjectOutput,
 		Serializable}
 import jlo.ioe.ui.Observable // XXX refactor
 import jlo.ioe.ui.Observer // XXX refactor
+import jlo.ioe.ui.EventHandler
 import jlo.ioe.ui.ObservableEvent
 import jlo.ioe.View
 import jlo.ioe.command._
@@ -22,28 +24,36 @@ case class FieldChanged(fieldName:String) extends DataObjectModification
 
 case class DataObjectModified(dom:DataObjectModification) extends ObservableEvent
 
+object Storage {
+  val objects = new scala.collection.mutable.HashMap[ObjectID,DataObject]()
+}
+
 trait DOStorage[+T <: DataObject] {
   import com.sleepycat.je.Database;
   import com.sleepycat.je.DatabaseConfig;
   import com.sleepycat.je.DatabaseException;
+  import com.sleepycat.je.DeadlockException;
   import com.sleepycat.je.DatabaseEntry;
   import com.sleepycat.je.LockMode;
   import com.sleepycat.je.OperationStatus;
   import com.sleepycat.je.Cursor;
+  import Storage._
 
   def db : Database
 
-  def createDB(n:String) : Database = {
+  def createDB(n:String, c:Class) : Database = {
     try {
+      ObjectManager.setStorageFor(c,this)
       val dbConfig = new DatabaseConfig
       dbConfig.setAllowCreate(true)
+      dbConfig.setTransactional(true)
       return ObjectManager.dbEnv.openDatabase(null,n,dbConfig)
     } catch  {
       case e:DatabaseException => e.printStackTrace
     }
     null.asInstanceOf[Database]
   }
-  def newTx = ObjectManager.dbEnv.beginTransaction(null,null)
+  def newTx = ObjectManager.dbEnv.beginTransaction(ObjectManager.dbEnv.getThreadTransaction,null)
   def getKey(o:ObjectID) : DatabaseEntry = new DatabaseEntry(o.bytes)
   def getValue(o:Serializable) : DatabaseEntry = {
     val bytes = new ByteArrayOutputStream()
@@ -56,16 +66,23 @@ trait DOStorage[+T <: DataObject] {
     in.readObject().asInstanceOf[T]
   }
 
+  def isLoaded(oid : ObjectID) = {
+    objects.get(oid).isDefined
+  }
+
   def store(o : DataObject) : T = {
+    Console.println("-=-=-=-=-=-=-=-=-=-=-=-=-=-=- storing: " + o)
+    val tx = newTx
     try {
       val key = getKey(o.objectID)
       val value = getValue(o)
-      val tx = newTx
       db.put(tx, key, value)
       tx.commit
+      objects.update(o.objectID, o)
     } catch {
-      case e:Exception => e.printStackTrace
-    }
+      case d:DeadlockException => { tx.abort; d.printStackTrace }
+      case e:Exception => { tx.abort; e.printStackTrace }
+    } 
     o.asInstanceOf[T]
   }
   def load(oid : ObjectID) : Option[T] = {
@@ -73,7 +90,9 @@ trait DOStorage[+T <: DataObject] {
       val key = getKey(oid)
       val obj = new DatabaseEntry()
       if (db.get(null, key, obj, LockMode.DEFAULT) == OperationStatus.SUCCESS) {
-	return Some(getObject(obj.getData()))
+	val theObject = getObject(obj.getData())
+	objects.update(theObject.objectID, theObject)
+	return Some(theObject)
       } 
     } catch {
       case e:Exception => e.printStackTrace
@@ -101,10 +120,11 @@ trait DOStorage[+T <: DataObject] {
   }
 }
 
-class ObjectID(val clazz : Class) {
+class ObjectID(val clazz : Class) extends java.io.Serializable {
   val className = clazz.getName()
   val uid = new UID()
   val bytes = toBytes
+  Console.println("ObjectID(" + className + ") + " + uid)
 
   private def toBytes : Array[byte] = {
     val bytes = new ByteArrayOutputStream
@@ -117,22 +137,27 @@ class ObjectID(val clazz : Class) {
 
 case class FieldChange[T](name:String,value:T) extends ObservableEvent
 
-@serializable
-trait DataObject extends Observable with Observer with Serializable {
+// todo: refactor to util?
+trait Storable extends java.io.Serializable {}
+
+@SerialVersionUID(1000)
+abstract class DataObject extends Observable with Observer with java.io.Externalizable with Storable with jlo.ioe.util.Identifiable {
   import DataObjects._
   import Fields._
   
-  val oid = new ObjectID(Predef.classOf[this.type])
+  // BEGIN: state
+  private var oid = new ObjectID(getClass())
   var tags = List[String]()
   var metadata = TreeMap[Symbol,AnyRef]()
   var instanceFields = TreeMap[String,Any]()
-//   val _actor = actor {
-//     loop {
-//       react {
-// 	case 'save => { val out = configuration.getObjectOutputStream(oid); out.writeObject(this); out.close() }
-//       }
-//     }
-//   }
+  var obsHandlers : Map[Observable,List[EventHandler]] = new HashMap[Observable,List[EventHandler]]()
+  var obsListeners : Set[Observer] = new HashSet[Observer]()
+  // END: state
+
+  def handlers = obsHandlers
+  def handlers_=(h:Map[Observable,List[EventHandler]]) = obsHandlers = h
+  def listeners = obsListeners
+  def listeners_=(o:Set[Observer]) = obsListeners = o
 
   meta(kOwner,"a user") // XXX
   meta(kCreated,new Date)
@@ -150,6 +175,49 @@ trait DataObject extends Observable with Observer with Serializable {
   protected def storage : DOStorage[DataObject]
   // ********************************************************************************
 
+  def writeExternal(oout:ObjectOutput) :Unit = {
+    Console.println("DataObject writeExternal")
+
+    // remember mixins
+    writeHandlers(oout)
+    writeObservers(oout)
+
+    // write self
+    oout.writeObject(oid)
+    oout.writeObject(tags)
+    oout.writeInt(metadata.size)
+    metadata.foreach { e => { oout.writeUTF(e._1.toString); oout.writeObject(e._2) } }
+    oout.writeInt(instanceFields.size)
+    instanceFields.foreach { e => {
+      oout.writeUTF(e._1); Console.println("writing field: " + e._1)
+      oout.writeObject(e._2)
+    }}
+    
+  }
+
+  def readExternal(in:ObjectInput):Unit = {
+    Console.println("DataObject readExternal")
+    readHandlers(in)
+    readObservers(in)
+
+    // read self
+    oid = in.readObject.asInstanceOf[ObjectID]
+    tags = in.readObject.asInstanceOf[List[String]]
+    
+    val mdCount = in.readInt
+    for (val i <- Iterator.range(0,mdCount)) {
+      val k = new Symbol(in.readUTF)
+      val v = in.readObject
+      meta(k,v)
+    }
+    val fieldCount = in.readInt
+    for (val i <- Iterator.range(0,fieldCount)) {
+      val n = in.readUTF
+      val f = in.readObject
+      addField(n,f)
+    }
+  }
+
   // todo - how to make the object multithreaded - I think actors are a good fit here! need to actorify
   // how to make actor's threadsafe?
   def objectID : ObjectID = oid
@@ -163,19 +231,14 @@ trait DataObject extends Observable with Observer with Serializable {
 
   override def toString = kind.toString + oid.hashCode
 
-//   private override def readObject(in:ObjectInputStream):Unit = {
-//     in.defaultReadObject()
-//   }
-//   private override def writeObject(out:ObjectOutputStream):Unit = {
-//     out.defaultWriteObject()
-//   }
-
-  def addField(n:String,get:Any) = {
-    instanceFields = instanceFields.update(n,get)
-    listenTo(get.asInstanceOf[Observable]) event {
+  def addField(n:String,f:Any) = {
+    Console.println(toString + ".addField(" + n + "," + f + ")")
+    instanceFields = instanceFields.update(n,f)
+    listenTo(f.asInstanceOf[Observable]) event {
       case FieldChange(n,v) => {
 	meta(kModified, new Date)
 	fire(DataObjectModified(FieldChanged(n)))
+	save
       }
     }
   }
@@ -203,18 +266,18 @@ object DataObjects {
   implicit def toComparable(s:Symbol) : Ordered[Symbol] = new ComparableSymbol(s)
   implicit def toComparable(s:String) : Ordered[String] = new ComparableString(s)
 
-  def load[T <: DataObject](oid : ObjectID) : Option[T] = ObjectManager.getStorageFor(oid).load(oid).asInstanceOf[Option[T]]
+  def load[T <: DataObject](oid : ObjectID) : Option[T] = ObjectManager.getStorageFor(oid).get(null).load(oid).asInstanceOf[Option[T]]
   def store[T <: DataObject](o : T) : T = { o.save; o }
 }
 
 object TagStorage extends DOStorage[Tag] {
-  val db = createDB("Tag")
+  val db = createDB("Tag", Predef.classOf[Tag])
 }
 
 @serializable
 @SerialVersionUID(1000)
 class Tag extends DataObject {
-  val value = Text(this,"value","")
+  val value = new Text(this,"value","")
 
   def kind = "Tag"
   def defaultView = null

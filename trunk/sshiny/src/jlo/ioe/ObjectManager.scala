@@ -1,27 +1,89 @@
 package jlo.ioe;
 
 // import com.db4o._
-import java.io.{ObjectInputStream,ObjectOutputStream,File,FileInputStream}
+import java.io.{ObjectInputStream,ObjectOutputStream,File,FileInputStream,ObjectInput,ObjectOutput}
 import scala.collection.mutable.HashMap
+
+class SystemStateWrapper {
+  var state : SystemState = null
+
+  def load = {
+    val sss = SystemStateStorage.loadAll
+    state = if (sss.length > 0) sss.head
+		else new SystemState
+    Console.println("AFTER LOAD SYSTEM: " + state)
+  }
+
+  def update(c:Class,d:data.DOStorage[data.DataObject]) = {
+    if (state != null) state.update(c,d)
+  }
+  def get(oid:data.ObjectID) : Option[data.DOStorage[data.DataObject]] = {
+    if (state != null) state.get(oid)
+    else None
+  }
+  
+}
 
 @serializable
 @SerialVersionUID(1000L)
 class SystemState extends data.DataObject {
-  var screens = List[ScreenState]()
-  var activeObjects = List[data.Ref[data.DataObject]]()
+  private var storageMap = new HashMap[Class,data.DOStorage[data.DataObject]]
 
   override def storage = SystemStateStorage
   override def defaultView = null.asInstanceOf[View]
   override def kind = "SystemState"
-  def addScreen(s:ScreenState) = screens ::: List(s)
-  def numScreens = screens.length
-  def activateObject(o:data.DataObject) = new data.Ref[data.DataObject](this,"active", o) :: activeObjects
-  def deactivateObject(o:data.DataObject) = activeObjects = activeObjects.remove(e => e.ref==o)
+
+  def update(c:Class,d:data.DOStorage[data.DataObject]) = {
+    Console.println("updateSS: " + c + ", " + d)
+    storageMap.update(c,d)
+    save
+  }
+  def get(oid:data.ObjectID) = {
+    storageMap.get(oid.clazz)
+  }
+
+  override def writeExternal(out:ObjectOutput) : Unit = {
+    super.writeExternal(out)
+    out.writeInt(storageMap.size)
+    storageMap.foreach { e => out.writeObject(e._1); out.writeObject(e._2.getClass) }
+  }
+  override def readExternal(in:ObjectInput) : Unit = {
+    super.readExternal(in)
+    val count = in.readInt
+    for (val i <- Iterator.range(0,count)) {
+      val k = in.readObject.asInstanceOf[Class]
+      val v = in.readObject.asInstanceOf[Class]
+      val f = v.getField("MODULE$") // implementation detail!
+      storageMap.update(k,f.get(null).asInstanceOf[data.DOStorage[data.DataObject]])
+    }
+  }
+
+  override def toString : String = {
+    storageMap.foreach { e => Console.println(e._1 + ": " + e._2) }
+    super.toString
+  }
 }
 
 object SystemStateStorage extends data.DOStorage[SystemState] {
+  import com.sleepycat.je.Database;
+  import com.sleepycat.je.DatabaseConfig;
+  import com.sleepycat.je.DatabaseException;
+
+  override def createDB(n:String, c:Class) : Database = {
+    try {
+      val dbConfig = new DatabaseConfig
+      dbConfig.setAllowCreate(true)
+      dbConfig.setTransactional(true)
+      return ObjectManager.dbEnv.openDatabase(null,n,dbConfig)
+    } catch  {
+      case e:DatabaseException => e.printStackTrace
+    }
+    null.asInstanceOf[Database]
+  }
+
   // create the system state database
-  override def db = createDB("SystemState")    
+  val _db = createDB("SystemState", classOf[SystemState])
+  override def db = _db
 }
 
 
@@ -35,28 +97,34 @@ object ObjectManager {
   var dbEnv : Environment = openEnvironment
   
   // load the system state!
-  private var state : SystemState = loadSystem
-  private var storageMap = new HashMap[Class,data.DOStorage[data.DataObject]]
+  private var screens : List[Screen] = Nil
+  private var storage = new SystemStateWrapper
+  storage.load
+  loadSystem
 
-  def addScreen(s:Screen) = state.addScreen(s.sstate)
-  def numScreens = state.numScreens
-  def getFirstScreen = state.screens.head
+  def addScreen(s:Screen) = screens = s :: screens
+  def numScreens = screens.length
+  def getFirstScreen = screens.head
 
-  def getStorageFor(oid:data.ObjectID) : data.DOStorage[data.DataObject] = { 
-    storageMap.get(oid.clazz).get(null)
+  def setStorageFor(c:Class,d:data.DOStorage[data.DataObject]) = {
+    storage.update(c,d)
+  }
+
+  def getStorageFor(oid:data.ObjectID) : Option[data.DOStorage[data.DataObject]] = { 
+    storage.get(oid)
   }
 
   def objectCreated(a : data.DataObject) {
     // put the object in the lobby? store to disk? create file?
     a.printMeta
-    state.activateObject(a)
   }
 
-  private def loadSystem : SystemState = {
+  private def loadSystem = {
+    //stostorage.getClass, SystemStateStorage)
     // try to read the system state
-    val allState = SystemStateStorage.loadAll
-    if (allState.isEmpty) new SystemState
-    else allState.head
+    val s = ScreenStateStorage.loadAll
+    Console.println("count: " + s.length)
+    s.foreach { e => addScreen(e.screen) }
   }
   
   private def openEnvironment : Environment = {
@@ -67,6 +135,7 @@ object ObjectManager {
       val envConfig = new EnvironmentConfig()
       envConfig.setTransactional(true)
       envConfig.setAllowCreate(true)
+      envConfig.setTxnSerializableIsolation(true)
       dbEnv = new Environment(new File("./db"), envConfig)
     } catch {
       case dbe : DatabaseException => { dbe.printStackTrace }// Exception handling goes here 
