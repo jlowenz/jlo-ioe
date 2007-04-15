@@ -7,6 +7,7 @@ import java.awt.Dimension
 import jlo.ioe.ui._
 import scala.actors._
 
+
 @serializable
 @SerialVersionUID(1000L)
 class SheetSelector(width : int) extends Panel with Observable with Observer {
@@ -19,6 +20,13 @@ class SheetSelector(width : int) extends Panel with Observable with Observer {
   setLayout(new GridLayout(1,0,0,0))
 
   def currentSheet = current.get.sheet
+
+//   def makeCurrent(sheet:Sheet) : Unit = {
+//     current match {
+//       case Some(s) => if (s != sheet) { nextSheet; makeCurrent(sheet) }
+//       case None => {}
+//     }
+//   }
 
   def newSheet(aSheet:Sheet) = sheets match {
     case Some(s) => {

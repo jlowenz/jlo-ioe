@@ -2,6 +2,7 @@ package jlo.ioe.ui
 
 import javax.swing._
 import javax.swing.event._
+import scala.collection.immutable.{HashSet,Set,HashMap,Map}
 
 case class Update[A](l:List[A]) extends ObservableEvent
 
@@ -26,7 +27,11 @@ class SList[A] extends JList with Component {
   def this(l:List[A]) = { this(); delegateTo(makeDelegate(l)) }
   
   private def makeDelegate(l:List[A]) = new SListDelegate[A] {
-    var data = l
+    private var data = l
+    private var obsListeners : Set[Observer] = new HashSet[Observer]()
+    def listeners = obsListeners
+    def listeners_=(o:Set[Observer]) = obsListeners = o
+
     def numElements : int = data.length
     def elementAt(i:int) : A = data(i)
   }
@@ -38,7 +43,11 @@ class SList[A] extends JList with Component {
   }
 
   class DelegateListModel(delegate:SListDelegate[A]) extends ListModel with Observer {
-    var listeners = List[ListDataListener]()
+    private var listeners = List[ListDataListener]()
+    private var obsHandlers : Map[Observable,List[EventHandler]] = new HashMap[Observable,List[EventHandler]]()
+    def handlers = obsHandlers
+    def handlers_=(h:Map[Observable,List[EventHandler]]) = obsHandlers = h
+
     def addListDataListener(l:ListDataListener) : Unit = {
       listeners = l :: listeners
       listenTo(delegate) event {

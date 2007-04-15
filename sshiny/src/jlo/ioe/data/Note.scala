@@ -17,8 +17,8 @@ package command {
 }
 
 // define note-related functions and loading routines
-object Note extends DOStorage[Note] {   
-  val db = createDB("Note")
+object NoteStorage extends DOStorage[Note] {   
+  val db = createDB("Note", classOf[Note])
   def defaultView(n:Note) = new NoteView(n)
 }
 
@@ -26,11 +26,13 @@ object Note extends DOStorage[Note] {
 @serializable
 @SerialVersionUID(1000)
 class Note extends DataObject {
-  val note = Text(this, "note", "")
+  val note = new Text(this, "note", "")
+  
   var defView : Option[View] = None
   // at the beginning, set the title to be the first set of characters
   listenTo(note) event {
     case FieldChange(n,v) => {
+      Console.println("FieldChange("+n+","+v+")")
       val eol = note.text.indexOf("\n")
       if (eol > 0) {
 	meta(DataObjects.kTitle, "Note: " + note.text.substring(0,eol))
@@ -40,11 +42,11 @@ class Note extends DataObject {
     }
   }
 
-  def storage = Note
+  def storage = NoteStorage
   def kind = "Note"
   def defaultView : View = defView match {
     case Some(v) => v
-    case None => { defView = Some(Note.defaultView(this)); defView.get }
+    case None => { defView = Some(storage.defaultView(this)); defView.get }
   } // todo: need to add support for single views (i.e. accessing an object with a view already open yields that view)
 }
 
@@ -63,20 +65,4 @@ class NoteView(note:Note) extends jlo.ioe.View {
   preferredSize(300,300)
   textPane.bindTo(note.note).trackingText;
   add(scrollPane)
-//   val _layout = new org.jdesktop.layout.GroupLayout(this);
-//   this.setLayout(_layout);
-//   _layout.setHorizontalGroup(
-//     _layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-//     .add(_layout.createSequentialGroup()
-//          .addContainerGap()
-//          .add(scrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 360, scala.compat.Math.MAX_SHORT)
-//          .addContainerGap())
-//   );
-//   _layout.setVerticalGroup(
-//     _layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-//     .add(_layout.createSequentialGroup()
-//          .addContainerGap()
-//          .add(scrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 266, scala.compat.Math.MAX_SHORT)
-//          .addContainerGap())
-//   );
 }

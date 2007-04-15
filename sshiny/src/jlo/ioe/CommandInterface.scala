@@ -12,11 +12,16 @@ import javax.swing._
 import javax.swing.border._
 import javax.swing.event._
 import scala.compat._
+import scala.collection.immutable.{HashMap,Map}
 import jlo.ioe.ui.TextField
 import jlo.ioe.ui._
 import jlo.ioe.command._
 
 object CommandInterface extends Observer {
+  private var obsHandlers : Map[Observable,List[EventHandler]] = new HashMap[Observable,List[EventHandler]]()
+  def handlers = obsHandlers
+  def handlers_=(h:Map[Observable,List[EventHandler]]) = obsHandlers = h
+
   val commandField  = new TextField() with behavior.KeyTracker with behavior.DocumentTracker {
     actions areHandled;
     setBorder(new CompoundBorder(new LineBorder(Color.black,1),new EmptyBorder(2,2,2,2)))

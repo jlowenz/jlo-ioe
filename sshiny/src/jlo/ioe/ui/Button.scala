@@ -16,4 +16,5 @@ class Button(var text:String) extends JButton(text) with Component {
     }
   })
   override def update(v:Any) = {}
+  override def toString = "Button"
 }

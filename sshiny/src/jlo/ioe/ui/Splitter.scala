@@ -4,7 +4,7 @@ import org.jdesktop.swingx.JXMultiSplitPane
 import org.jdesktop.swingx.MultiSplitLayout
 
 object SplitType {
-  abstract class SplitType
+  abstract class SplitType   
   case class NoSplit extends SplitType
   case class Horizontal extends SplitType
   case class Vertical extends SplitType
@@ -17,12 +17,24 @@ object Aspect {
 } 
 
 @serializable
-class Split[T](var obj:Option[T], var aspect:Aspect.Aspect, var weight: double, comp : (T)=>Component) {
+@SerialVersionUID(1000)
+class ComponentAccessor[T](f:Function1[T,Component]) extends Function1[T,Component] with java.io.Serializable {
+  def apply(p : T) : Component = f(p)
+}
+
+object Splitter {
+  implicit def view[T](f:Function1[T,Component]) = new ComponentAccessor(f)
+}
+
+@SerialVersionUID(1000)
+class Split[T](var obj:Option[T], var aspect:Aspect.Aspect, var weight: double, var comp : ComponentAccessor[T]) extends java.io.Externalizable {
   var kind : SplitType.SplitType = SplitType.NoSplit
   var first : Option[Split[T]] = None
   var second : Option[Split[T]] = None
 
-  def apply() = obj
+  def this() = this(None,Aspect.Vertical,0.0,null)
+
+  def apply() : Option[T] = obj.orElse { first.get.apply() } // todo: fix this!
   def update(o:T) = obj = Some(o)
   def component = comp(obj.get)
   def area = obj match {
@@ -43,24 +55,46 @@ class Split[T](var obj:Option[T], var aspect:Aspect.Aspect, var weight: double, 
     kind = SplitType.Horizontal()
   }
 
+  // todo: this may not be necessary
+  def writeExternal(out:java.io.ObjectOutput) : Unit = {
+    out.writeObject(obj)
+    out.writeObject(aspect)
+    out.writeDouble(weight)
+    out.writeObject(comp)
+    out.writeObject(kind)
+    out.writeObject(first.get(null))
+    out.writeObject(second.get(null))
+  }
+  def readExternal(in:java.io.ObjectInput) : Unit = {
+    obj = in.readObject.asInstanceOf[Option[T]]
+    aspect = in.readObject.asInstanceOf[Aspect.Aspect]
+    weight = in.readDouble
+    comp = in.readObject.asInstanceOf[ComponentAccessor[T]]
+    kind = in.readObject.asInstanceOf[SplitType.SplitType]
+    val f = in.readObject.asInstanceOf[Split[T]]
+    val s = in.readObject.asInstanceOf[Split[T]]
+    first = if (f != null) Some(f) else None
+    second = if (s != null) Some(s) else None
+  }
+
   override def toString = "Split(" + obj + "," + aspect + "," + kind + "(" + first + ")(" + second + "))"
 }
 
 // TODO: this is broken. the splitpane seems not to handle more than 8 components!
-class Splitter extends jlo.ioe.ui.MSP with Component {
+class Splitter extends JXMultiSplitPane with Component {
   import scala.collection.mutable.HashMap
   import scala.compat.StringBuilder
   import javax.swing.JOptionPane
 
 
   def resplit[T](root:Split[T]) = {
-    getMSPLayout().setFloatingDividers(true)    
+    getMultiSplitLayout().setFloatingDividers(true)    
     val compMap = new HashMap[String,Split[T]]
     val layoutDef = buildLayout(root,compMap)
     Console.println("Layout: " + layoutDef)
     //val modelRoot = MSPLayout.parseModel(layoutDef);
     val modelRoot = layoutDef
-    getMSPLayout().setModel(modelRoot);
+    getMultiSplitLayout().setModel(modelRoot);
 
     javax.swing.SwingUtilities.invokeLater(new Runnable() {
       def run = {
@@ -76,18 +110,18 @@ class Splitter extends jlo.ioe.ui.MSP with Component {
     });
   }
 
-  private def buildLayout[T](split : Split[T], map : HashMap[String,Split[T]]) : MSPLayout.Node = {
+  private def buildLayout[T](split : Split[T], map : HashMap[String,Split[T]]) : MultiSplitLayout.Node = {
     split.kind match {
       case SplitType.Horizontal() => {
-	val n = new MSPLayout.Split(List(buildLayout(split.first.get,map),
-						new MSPLayout.Divider,
+	val n = new MultiSplitLayout.Split(List(buildLayout(split.first.get,map),
+						new MultiSplitLayout.Divider,
 						buildLayout(split.second.get,map)).toArray)
 	n.setRowLayout(false)
 	n
       }
       case SplitType.Vertical() => {
-	val n = new MSPLayout.Split(List(buildLayout(split.first.get,map),
-						new MSPLayout.Divider,
+	val n = new MultiSplitLayout.Split(List(buildLayout(split.first.get,map),
+						new MultiSplitLayout.Divider,
 						buildLayout(split.second.get,map)).toArray)
 	n.setRowLayout(true)
 	n
@@ -95,7 +129,7 @@ class Splitter extends jlo.ioe.ui.MSP with Component {
       case _ => {
 	val name = "comp" + split().get
 	map.update(name, split)
-	val leaf = new MSPLayout.Leaf(name)	
+	val leaf = new MultiSplitLayout.Leaf(name)	
 	leaf
       }
     }

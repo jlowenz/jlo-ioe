@@ -1,6 +1,8 @@
 package jlo.ioe.data
 
 import jlo.ioe.ui.{Observable,Observer}
+import scala.collection.immutable.{Set,HashSet}
+import java.io.{ObjectInput,ObjectOutput}
 
 object Fields {
   implicit def view(a:Any) : Text = a.asInstanceOf[Text]
@@ -9,9 +11,30 @@ object Fields {
 
 // todo: think about this - maybe not the best idea? 
 // too nice for a programmer, but PITA for performance/space?
-abstract class Field[T](owner:DataObject, name:String, init:T) extends Observable {
+@SerialVersionUID(1000)
+abstract class Field[T](var owner:DataObject, var name:String, init:T) extends Observable with java.io.Externalizable with Storable {
+  protected var obsListeners : Set[Observer] = new HashSet[Observer]()
+
   if (owner != null) owner.addField(name,this)
-  
+    
+  def listeners = { Console.println("getListeners: " + obsListeners); obsListeners }
+  def listeners_=(o : Set[Observer]) = {
+    if (o == null) { 
+      Console.println("listeners is null!")
+      new Throwable().printStackTrace
+    }
+    obsListeners = o
+  }
+
+  def writeExternal(out:ObjectOutput) : Unit = {
+    writeObservers(out)
+    out.writeObject(apply())
+  }
+  def readExternal(in:ObjectInput) : Unit = {
+    readObservers(in)
+    update(in.readObject().asInstanceOf[T])
+  }
+
   var data : T = init
   var getter : T => T = identity[T]
   var setter : T => T = identity[T]
@@ -26,59 +49,29 @@ abstract class Field[T](owner:DataObject, name:String, init:T) extends Observabl
 //********************************************************************************
 // Field kinds! these need to be pulled out, somehow? how to extend? things should be
 // available to all dataobjects
-@serializable
-case class Text(owner_ : DataObject, name_ : String, init_ :String) extends Field(owner_, name_,init_) {
-  val name = name_
-  def text : String = apply()
-  def text(v:String) : Text = { update(v); this }
+@SerialVersionUID(1000)
+class Text(owner_ : DataObject, name_ : String, init_ :String) extends Field(owner_, name_,init_) {
+
+  def this() = this(null,"","")
+
+  def text : String = synchronized { apply() }
+  def text(v:String) : Text = { synchronized { update(v) }; this }
 }
 
-// todo: this needs to be fixed - should have model?? instead of visual element?
-class ImageCanvas extends jlo.ioe.ui.Panel {
-  import javax.swing.border.LineBorder
-  import java.awt.Color
+package field {
+  @SerialVersionUID(1000)
+  class Image(owner_ : DataObject, name_ : String, init_ : java.awt.Image) extends Field(owner_,name_,init_) {
+    def this() = this(null,"",null)
 
-  setBackground(Color.white)
-  setBorder(new LineBorder(Color.black,1))
-}
-
-object Graphics {
-  def BLANK = new ImageCanvas
-}
-
-case class Graphic(owner_ : DataObject, name_ : String, init_ : ImageCanvas) extends Field(owner_,name_,init_) {
-  
-}
-
-@serializable
-@SerialVersionUID(1000L)
-case class Ref[R <: DataObject](owner : DataObject, name : String, init : R) extends Field(owner, name,init) {
-  var loaded = true
-  var oid : ObjectID = init.objectID
-  var maybeData : Option[R] = Some(init)
-  get( (d) => maybeData match {
-    case Some(o) => o
-    case None => load(oid)
-  } )
-  set( d => { oid = d.objectID; maybeData = Some(d); d } )
-
-  def this(owner : DataObject, name_ :String, oid_ :ObjectID) = { this(owner, name_ , null.asInstanceOf[R]); oid = oid_; maybeData = None; loaded = false; this }
-  
-  def ref(v:R) : Ref[R] = { update(v); this }
-  def ref : R = apply()
-  private def load(o:ObjectID) : R = { DataObjects.load(o).asInstanceOf[R] }
-  private def writeReplace() : Object = new RefProxy[R](owner, name,oid)
-}
-@serializable
-@SerialVersionUID(1000L)
-class RefProxy[R <: DataObject](owner: DataObject, name:String, oid: ObjectID) {
-  private def readReplace() : Object = {
-    new Ref[R](owner, name,oid)
   }
 }
 
-abstract class DOCollection[E](owner : DataObject, name : String) extends Observable with Seq[E] {
+abstract class DOCollection[E](owner : DataObject, name : String) extends Observable with Seq[E] with java.io.Serializable {
   owner.addField(name,this)
+
+  var obsListeners : Set[Observer] = new HashSet[Observer]()
+  def listeners = obsListeners
+  def listeners_=(o:Set[Observer]) = obsListeners = o
 
   def buf : Seq[E]
   def add(e:E) : boolean

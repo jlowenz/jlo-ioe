@@ -1,102 +1,107 @@
 package jlo.ioe.ui;
 
-import scala.collection.jcl._
 import scala.collection.immutable._
 import scala.actors.Actor._
-import java.io.{ObjectInputStream,ObjectOutputStream}
+import java.io.{ObjectInputStream,ObjectOutputStream,ObjectInput,ObjectOutput}
+import java.util.concurrent._
+import jlo.ioe.data.Storable;
 
 abstract class ObservableEvent
 
-trait Observer {
-  var handler = makeActor
-  private def makeActor = actor {
-    loop {
-      react {
-	case Handle(o, e) => { 
-	  try { handlers.get(o).getOrElse(List()).foreach { f => f(e) } }
-	  catch { case e:Throwable => e.printStackTrace() }
-	}
-	case Event(o, f) => {
-	  Console.println("event " + this)
-	  var l = handlers.get(o).getOrElse(List[Function1[ObservableEvent,Unit]]())
-	  l = f :: l
-	  handlers = handlers.update(o, l)
-	}
-	case RemoveEvents(o) => {
-	  Console.println("remove events")
-	  handlers = handlers - o
-	}
-      }
-    } 
-  }
- 
-//   @throws(classOf[java.io.IOException])
-//   @throws(classOf[java.lang.ClassNotFoundException])
-//   def readObject(in:ObjectInputStream) :Unit = {
-//     handler = makeActor
-//     handlers = Map[Observable,List[Function1[ObservableEvent,Unit]]]()
-//   }
-//   @throws(classOf[java.io.IOException])
-//   def writeObject(out:ObjectOutputStream) :Unit = {}
-
-  class ListenTarget(o:Observable) {
-    def event(f:Function1[ObservableEvent,Unit]) = handler ! Event(o,f)
-  }
-
-  var handlers = Map[Observable,List[Function1[ObservableEvent,Unit]]]()
-//  handler.start()
-
-  def listenTo(o:Observable)  = { o.addObserver(this); new ListenTarget(o) }
-  // maybe don't want to remove events? not sure
-  def ignore(o:Observable) : this.type = { o.removeObserver(this); handler ! RemoveEvents(o); this }
-  def handle(o:Observable, e:ObservableEvent) = handler ! Handle(o,e)
-
-  
-  abstract class Msg
-  case class Handle(o:Observable, e:ObservableEvent) extends Msg
-  case class Event(o:Observable, f:Function1[ObservableEvent,Unit]) extends Msg
-  case class RemoveEvents(o:Observable) extends Msg
+@serializable
+@SerialVersionUID(1000)
+class EventHandler(f:Function1[ObservableEvent,Unit]) extends Function1[ObservableEvent,Unit] with java.io.Serializable {
+  def apply(e:ObservableEvent) = f(e)
 }
 
-trait Observable {
-  var observers = makeActor
+object Threads {
+  //var pool = Executors.newCachedThreadPool
+  var pool = Executors.newFixedThreadPool(1)
+}
 
-  private def makeActor = actor {
-    loop {
-      react {
-	case Add(o) => {
-	  Console.println("listenTo " + this)
-	  listeners = o :: listeners
-	}
-	case Remove(o) => listeners = listeners filter { l => l == o }
-	case Fire(e) => { listeners foreach { l => l.handle(this,e) } }
+trait Observer {
+  def handlers : Map[Observable,List[EventHandler]]
+  def handlers_=(h:Map[Observable,List[EventHandler]]) : Unit
+
+  class ListenTarget(o:Observable) {
+    def event(f:Function1[ObservableEvent,Unit]) = {
+      Console.println("event " + Observer.this)
+      synchronized {
+	var l = handlers.get(o).getOrElse(List[EventHandler]())
+	l = new EventHandler(f) :: l
+	handlers = handlers.update(o, l)
       }
+      handlers.foreach { e => Console.println("\t" + e._1 + " --> " + e._2) }
     }
   }
 
-  var listeners = List[Observer]()
-//  observers.start()
+  private def spawn(f:EventHandler, e:ObservableEvent) = Threads.pool.execute(new Runnable { def run = f(e) })
 
-//   @throws(classOf[java.io.IOException])
-//   @throws(classOf[java.lang.ClassNotFoundException])
-//   def readObject(in:ObjectInputStream) : Unit = {
-//     observers = makeActor
-//     listeners = List[Observer]()
-//   }
-//   @throws(classOf[java.io.IOException])
-//   def writeObject(out:ObjectOutputStream) : Unit = {
-//     Console.println("called?? **********************")
-//   }
+  def listenTo(o:Observable)  = { o.addObserver(this); new ListenTarget(o) }
+  // maybe don't want to remove events? not sure
+  def ignore(o:Observable) : this.type = { 
+    o.removeObserver(this)
+    Console.println("remove events")
+    synchronized {
+      handlers = handlers - o
+    }
+    this 
+  }
+  def handle(o:Observable, e:ObservableEvent) = { 
+    try { handlers.get(o).getOrElse(List()).foreach { f => spawn(f,e) } }
+    catch { case e:Throwable => e.printStackTrace() }
+  }
 
+  def readHandlers(in:ObjectInput) : Unit = {
+    val count = in.readInt
+    for (val i <- 1.to(count)) {
+      handlers = handlers.update(in.readObject.asInstanceOf[Observable], in.readObject.asInstanceOf[List[EventHandler]])
+    }
+ }
   
-  def addObserver(o:Observer) = observers ! Add(o)
-  def removeObserver(o:Observer) = observers ! Remove(o)
-  def fire(e:ObservableEvent) = { observers ! Fire(e) }
-
-  abstract class Msg
-  case class Add(o : Observer) extends Msg
-  case class Remove(o : Observer) extends Msg
-  case class Fire(e: ObservableEvent) extends Msg
+  def writeHandlers(out:ObjectOutput) : Unit = {
+    val h = handlers.filter { e => e._1.isInstanceOf[Storable] }
+    out.writeInt(h.size)
+    h.foreach { e => {
+      out.writeObject(e._1)
+      out.writeObject(e._2)
+    }}
+  }
 }
 
-  
+@serializable
+trait Observable {
+  // BEGIN: state
+  // todo: observers may need to be wrapped in lazy references
+  def listeners : Set[Observer]
+  def listeners_=(s:Set[Observer]) : Unit
+  // END: state
+
+  // todo: fix this
+  def addObserver(o:Observer) =  {
+    Console.println("listenTo " + this)
+    synchronized {
+      listeners = listeners.+(o)
+    }
+  }
+  def removeObserver(o:Observer) =  synchronized { listeners = listeners filter { l => l == o } }
+  def fire(e:ObservableEvent) = { 
+    for (val l <- listeners.elements) {
+      l.handle(this,e) 
+    }
+  }
+
+  def readObservers(in:ObjectInput) : Unit = {
+    val count = in.readInt
+    for (val i <- 1.to(count)) {
+      listeners = listeners + in.readObject.asInstanceOf[Observer]
+    }
+  }
+
+  def writeObservers(out:ObjectOutput) : Unit = {
+    val l = listeners.filter { e => e.isInstanceOf[Storable] }
+    out.writeInt(l.size)
+    l.foreach { e => Console.println("wO: " + e); out.writeObject(e) }
+  }
+}
+

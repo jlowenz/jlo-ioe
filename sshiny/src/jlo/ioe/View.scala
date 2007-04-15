@@ -1,18 +1,22 @@
 package jlo.ioe
 
-import jlo.ioe.ui.{Observer,Observable}
+import jlo.ioe.ui.{Observer,Observable,EventHandler}
 import jlo.ioe.ui.Panel
 import jlo.ioe.ui.Component
 import jlo.ioe.ui.Button
 import jlo.ioe.ui.TextComponent
 import jlo.ioe.data.{DataObject,FieldChange}
+import scala.collection.immutable.{Map,HashMap}
 
-trait Binder[B]  {
+trait Binder[B] extends Observer {
+  var obsHandlers : Map[Observable,List[EventHandler]] = new HashMap[Observable,List[EventHandler]]()
+  def handlers = obsHandlers
+  def handlers_=(h:Map[Observable,List[EventHandler]]) = obsHandlers = h
+
   var target : Observable = _
   def bindTo[T](f : data.Field[T]) : B = { 
     Console.println("bindTo " + f)
     target = f
-    Console.println("\ttarget: " + target)
     this.asInstanceOf[B] 
   }
 }
@@ -21,23 +25,28 @@ trait FunctionBinder[B] {
   def bindTo[T](f : ()=>Unit) : B = { func = f; this.asInstanceOf[B] }
 }
 
-case class TextBinder(comp:TextComponent) extends Binder[TextBinder] with Observer {
+case class TextBinder(comp:TextComponent) extends Binder[TextBinder] {
   import jlo.ioe.ui.behavior.DocumentChanged
+  
+  def getComp = comp
+
   def trackingText = {
+    getComp.setText(target.asInstanceOf[data.Text].text)
+    
     listenTo(target) event {
-      case FieldChange(n,v) => if (v != comp.getText()) comp.update(v)
+      case FieldChange(n,v) => if (v != getComp.getText()) getComp.update(v)
     }
     listenTo(comp) event {
       case DocumentChanged(e) => {
 	Console.println("textbinder: doc changed")
-	target.asInstanceOf[data.Text].text(comp.getText())
+	target.asInstanceOf[data.Text].text(getComp.getText())
       }
     }
     this
   }
   def kind = "*TextBinder*"
 } 
-case class ButtonBinder(comp:Button) extends Binder[ButtonBinder] with FunctionBinder[ButtonBinder] with Observer {
+case class ButtonBinder(comp:Button) extends Binder[ButtonBinder] with FunctionBinder[ButtonBinder] {
   import jlo.ioe.ui.Pressed
   def trackingPresses = {
     listenTo(comp) event {

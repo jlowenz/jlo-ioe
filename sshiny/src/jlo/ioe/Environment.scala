@@ -19,7 +19,7 @@ import scala.List
 import javax.swing.border.LineBorder
 
 object Environment {
-  //UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName())
+  UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName())
   //UIManager.setLookAndFeel("net.sourceforge.napkinlaf.NapkinLookAndFeel")
   Scheduler.impl = new ThreadPoolScheduler()
 
@@ -28,15 +28,19 @@ object Environment {
 
   def loadScreen : Screen = {
     if (ObjectManager.numScreens < 1) {
+      Console.println("no screens")
       screen = new Screen(System.getProperty("user.name"))
       ObjectManager.addScreen(screen)
       screen
     } else {
-      screen = new Screen(ObjectManager.getFirstScreen)
+      Console.println("found screen")
+      screen = ObjectManager.getFirstScreen
       screen
     }
   }
   var screen : Screen = loadScreen
+  screen.preInit
+  screen.setVisible(true)
 
   // todo: this indirection is here to handle multiple screens
   def newSheet(a:data.DataObject) = screen.newSheet(a)
