@@ -14,8 +14,12 @@ object Fields {
 @SerialVersionUID(1000)
 abstract class Field[T](var owner:DataObject, var name:String, init:T) extends Observable with java.io.Externalizable with Storable {
   protected var obsListeners : Set[Observer] = new HashSet[Observer]()
+  attach(owner)
 
-  if (owner != null) owner.addField(name,this)
+  def attach(o:DataObject) = {
+    owner = o
+    if (owner != null) owner.addField(name,this)
+  }
     
   def listeners = { Console.println("getListeners: " + obsListeners); obsListeners }
   def listeners_=(o : Set[Observer]) = {
@@ -27,13 +31,19 @@ abstract class Field[T](var owner:DataObject, var name:String, init:T) extends O
   }
 
   def writeExternal(out:ObjectOutput) : Unit = {
+    Console.println("field.writeExternal")
     writeObservers(out)
+    out.writeUTF(name)
     out.writeObject(apply())
   }
   def readExternal(in:ObjectInput) : Unit = {
+    Console.println("field.readExternal")
     readObservers(in)
+    name = in.readUTF
     update(in.readObject().asInstanceOf[T])
   }
+
+  override def toString : String = "Field(" + name + ") ---> " + data
 
   var data : T = init
   var getter : T => T = identity[T]

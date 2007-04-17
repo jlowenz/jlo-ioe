@@ -26,112 +26,157 @@ case class DataObjectModified(dom:DataObjectModification) extends ObservableEven
 
 object Storage {
   val objects = new scala.collection.mutable.HashMap[ObjectID,DataObject]()
+  val threads = java.util.concurrent.Executors.newCachedThreadPool
 }
 
 trait DOStorage[+T <: DataObject] {
-  import com.sleepycat.je.Database;
-  import com.sleepycat.je.DatabaseConfig;
-  import com.sleepycat.je.DatabaseException;
-  import com.sleepycat.je.DeadlockException;
-  import com.sleepycat.je.DatabaseEntry;
-  import com.sleepycat.je.LockMode;
-  import com.sleepycat.je.OperationStatus;
-  import com.sleepycat.je.Cursor;
-  import Storage._
+  import com.db4o._
+  import com.db4o.ext._
+  
+  def db : Class
+  
+  def createDB(n:String, c:Class) = {
+    Db4o.configure().objectClass(c).cascadeOnUpdate(true);
+    Db4o.configure().objectClass(c).cascadeOnActivate(true);
+    c
+  }
 
-  def db : Database
-
-  def createDB(n:String, c:Class) : Database = {
-    try {
-      ObjectManager.setStorageFor(c,this)
-      val dbConfig = new DatabaseConfig
-      dbConfig.setAllowCreate(true)
-      dbConfig.setTransactional(true)
-      return ObjectManager.dbEnv.openDatabase(null,n,dbConfig)
-    } catch  {
-      case e:DatabaseException => e.printStackTrace
+  def toList(l:java.util.List) : List[T] = {
+    var i = l.listIterator
+    var r = List[T]()
+    while (i.hasNext()) {
+      r = r ::: List(i.next.asInstanceOf[T])
     }
-    null.asInstanceOf[Database]
-  }
-  def newTx = ObjectManager.dbEnv.beginTransaction(ObjectManager.dbEnv.getThreadTransaction,null)
-  def getKey(o:ObjectID) : DatabaseEntry = new DatabaseEntry(o.bytes)
-  def getValue(o:Serializable) : DatabaseEntry = {
-    val bytes = new ByteArrayOutputStream()
-    val out = new ObjectOutputStream(bytes)
-    out.writeObject(o)
-    new DatabaseEntry(bytes.toByteArray)
-  }
-  def getObject(b:Array[byte]) : T = {
-    val in = new ObjectInputStream(new ByteArrayInputStream(b))
-    in.readObject().asInstanceOf[T]
-  }
-
-  def isLoaded(oid : ObjectID) = {
-    objects.get(oid).isDefined
-  }
-
-  def store(o : DataObject) : T = {
-    Console.println("-=-=-=-=-=-=-=-=-=-=-=-=-=-=- storing: " + o)
-    val tx = newTx
-    try {
-      val key = getKey(o.objectID)
-      val value = getValue(o)
-      db.put(tx, key, value)
-      tx.commit
-      objects.update(o.objectID, o)
-    } catch {
-      case d:DeadlockException => { tx.abort; d.printStackTrace }
-      case e:Exception => { tx.abort; e.printStackTrace }
-    } 
-    o.asInstanceOf[T]
-  }
-  def load(oid : ObjectID) : Option[T] = {
-    try {
-      val key = getKey(oid)
-      val obj = new DatabaseEntry()
-      if (db.get(null, key, obj, LockMode.DEFAULT) == OperationStatus.SUCCESS) {
-	val theObject = getObject(obj.getData())
-	objects.update(theObject.objectID, theObject)
-	return Some(theObject)
-      } 
-    } catch {
-      case e:Exception => e.printStackTrace
-    }
-    return None
+    r
   }
 
   def loadAll : List[T] = {
-    var all = List[T]()
-    var cursor : Cursor = null
-    try {
-      // Open the cursor. 
-      cursor = db.openCursor(null, null)
-      val foundKey = new DatabaseEntry();
-      val foundData = new DatabaseEntry();
-      
-      while (cursor.getNext(foundKey, foundData, LockMode.DEFAULT) == OperationStatus.SUCCESS) {
-	val obj : T = getObject(foundData.getData())
-	all = all ::: List(obj)
-      }
-    } catch {
-      case de:DatabaseException => System.err.println("Error accessing database." + de);
-    } 
-    all
+    Console.println("loadAll: " + db)
+    val all : java.util.List = ObjectManager.dbEnv.query(db)
+    Console.println("found: " + all.size())
+    toList(all)
   }
+
+  def store(o:DataObject) = {
+//     try {
+//       ObjectManager.dbEnv.set(o.asInstanceOf[T])
+//       ObjectManager.dbEnv.commit()
+//     } catch {
+//       case e:ObjectNotStorableException => Console.println("not storable")
+//     }
+    o
+  }
+  
+//   import com.sleepycat.je.Database;
+//   import com.sleepycat.je.DatabaseConfig;
+//   import com.sleepycat.je.DatabaseException;
+//   import com.sleepycat.je.DeadlockException;
+//   import com.sleepycat.je.DatabaseEntry;
+//   import com.sleepycat.je.LockMode;
+//   import com.sleepycat.je.OperationStatus;
+//   import com.sleepycat.je.Cursor;
+//   import Storage._
+
+//   def db : Database
+
+//   def createDB(n:String, c:Class) : Database = {
+//     try {
+//       ObjectManager.setStorageFor(c,this)
+//       val dbConfig = new DatabaseConfig
+//       dbConfig.setAllowCreate(true)
+//       dbConfig.setTransactional(true)
+//       dbConfig.setDeferredWrite(true)
+//       return ObjectManager.dbEnv.openDatabase(null,n,dbConfig)
+//     } catch  {
+//       case e:DatabaseException => e.printStackTrace
+//     }
+//     null.asInstanceOf[Database]
+//   }
+
+//   def newTx = ObjectManager.dbEnv.beginTransaction(ObjectManager.dbEnv.getThreadTransaction,null)
+
+//   def getKey(o:ObjectID) : DatabaseEntry = new DatabaseEntry(o.bytes)
+
+//   def getValue(o:Serializable) : DatabaseEntry = {
+//     val bytes = new ByteArrayOutputStream()
+//     val out = new ObjectOutputStream(bytes)
+//     out.writeObject(o)
+//     new DatabaseEntry(bytes.toByteArray)
+//   }
+
+//   def getObject(b:Array[byte]) : T = {
+//     val in = new ObjectInputStream(new ByteArrayInputStream(b))
+//     in.readObject().asInstanceOf[T]
+//   }
+
+//   def isLoaded(oid : ObjectID) = {
+//     objects.get(oid).isDefined
+//   }
+
+//   def store(o : DataObject) : T = {
+//     Console.println("-=-=-=-=-=-=-=-=-=-=-=-=-=-=- storing: " + o)
+//     val tx = newTx
+//     try {
+//       val key = getKey(o.objectID)
+//       val value = getValue(o)
+//       db.put(tx, key, value)
+//       tx.commit
+//       objects.update(o.objectID, o)
+//       threads.execute(new Runnable { def run : Unit = db.sync })
+//     } catch {
+//       case d:DeadlockException => { tx.abort; d.printStackTrace }
+//       case e:Exception => { tx.abort; e.printStackTrace }
+//     } 
+//     o.asInstanceOf[T]
+//   }
+//   def load(oid : ObjectID) : Option[T] = {
+//     try {
+//       val key = getKey(oid)
+//       val obj = new DatabaseEntry()
+//       if (db.get(null, key, obj, LockMode.DEFAULT) == OperationStatus.SUCCESS) {
+// 	val theObject = getObject(obj.getData())
+// 	objects.update(theObject.objectID, theObject)
+// 	return Some(theObject)
+//       } 
+//     } catch {
+//       case e:Exception => e.printStackTrace
+//     }
+//     return None
+//   }
+
+//   def loadAll : List[T] = {
+//     var all = List[T]()
+//     var cursor : Cursor = null
+//     try {
+//       // Open the cursor. 
+//       cursor = db.openCursor(null, null)
+//       val foundKey = new DatabaseEntry();
+//       val foundData = new DatabaseEntry();
+      
+//       while (cursor.getNext(foundKey, foundData, LockMode.DEFAULT) == OperationStatus.SUCCESS) {
+// 	val obj : T = getObject(foundData.getData())
+// 	all = all ::: List(obj)
+//       }
+//     } catch {
+//       case de:DatabaseException => System.err.println("Error accessing database." + de);
+//     } 
+//     all
+//   }
 }
 
-class ObjectID(val clazz : Class) extends java.io.Serializable {
-  val className = clazz.getName()
+//class ObjectID(val clazz : Class) extends java.io.Serializable {
+class ObjectID extends java.io.Serializable {
   val uid = new UID()
-  val bytes = toBytes
-  Console.println("ObjectID(" + className + ") + " + uid)
 
-  private def toBytes : Array[byte] = {
-    val bytes = new ByteArrayOutputStream
-    val out = new DataOutputStream(bytes)
-    uid.write(out)
-    out.writeUTF(className)
-    bytes.toByteArray
+  override def equals(o:Any) : boolean = {
+    if (o.isInstanceOf[ObjectID]) {
+      val oid = o.asInstanceOf[ObjectID]
+      uid.equals(oid.uid)
+    } else false
+  }
+
+  override def hashCode : int = {
+    uid.hashCode
   }
 }
 
@@ -141,18 +186,21 @@ case class FieldChange[T](name:String,value:T) extends ObservableEvent
 trait Storable extends java.io.Serializable {}
 
 @SerialVersionUID(1000)
-abstract class DataObject extends Observable with Observer with java.io.Externalizable with Storable with jlo.ioe.util.Identifiable {
+abstract class DataObject(oid:ObjectID) extends Observable with Observer with java.io.Externalizable with Storable with jlo.ioe.util.Identifiable {
   import DataObjects._
   import Fields._
   
+  def this() = this(new ObjectID)
+
   // BEGIN: state
-  private var oid = new ObjectID(getClass())
   var tags = List[String]()
   var metadata = TreeMap[Symbol,AnyRef]()
   var instanceFields = TreeMap[String,Any]()
   var obsHandlers : Map[Observable,List[EventHandler]] = new HashMap[Observable,List[EventHandler]]()
   var obsListeners : Set[Observer] = new HashSet[Observer]()
   // END: state
+
+  def getField[T](n:String) : T = instanceFields.get(n).get.asInstanceOf[T]
 
   def handlers = obsHandlers
   def handlers_=(h:Map[Observable,List[EventHandler]]) = obsHandlers = h
@@ -201,7 +249,7 @@ abstract class DataObject extends Observable with Observer with java.io.External
     readObservers(in)
 
     // read self
-    oid = in.readObject.asInstanceOf[ObjectID]
+    //oid = in.readObject.asInstanceOf[ObjectID]
     tags = in.readObject.asInstanceOf[List[String]]
     
     val mdCount = in.readInt
@@ -214,14 +262,16 @@ abstract class DataObject extends Observable with Observer with java.io.External
     for (val i <- Iterator.range(0,fieldCount)) {
       val n = in.readUTF
       val f = in.readObject
-      addField(n,f)
+      f.asInstanceOf[Field[Any]].attach(this)
+      Console.println("field: " + f.asInstanceOf[Field[Any]])
+      //addField(n,f)
     }
   }
 
   // todo - how to make the object multithreaded - I think actors are a good fit here! need to actorify
   // how to make actor's threadsafe?
   def objectID : ObjectID = oid
-  def save : DataObject = storage.store(this) 
+  def save : DataObject = storage.store(this)
   def meta(k:Symbol,v:AnyRef) = {
     metadata = metadata.update(k,v)
     fire(DataObjectModified(MetadataChanged(k)))
@@ -265,9 +315,6 @@ object DataObjects {
   
   implicit def toComparable(s:Symbol) : Ordered[Symbol] = new ComparableSymbol(s)
   implicit def toComparable(s:String) : Ordered[String] = new ComparableString(s)
-
-  def load[T <: DataObject](oid : ObjectID) : Option[T] = ObjectManager.getStorageFor(oid).get(null).load(oid).asInstanceOf[Option[T]]
-  def store[T <: DataObject](o : T) : T = { o.save; o }
 }
 
 object TagStorage extends DOStorage[Tag] {

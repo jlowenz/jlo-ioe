@@ -17,19 +17,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/jlo/ioe/util/F.java" afterPath="$PROJECT_DIR$/src/jlo/ioe/util/F.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/jlo/ioe/messaging/SubscriberDelegate.java" afterPath="$PROJECT_DIR$/src/jlo/ioe/messaging/SubscriberDelegate.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/jshiny.iml" afterPath="$PROJECT_DIR$/jshiny.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/jlo/ioe/messaging/MessageService.java" afterPath="$PROJECT_DIR$/src/jlo/ioe/messaging/MessageService.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/jlo/ioe/messaging/MessageWithParams.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/jlo/ioe/data/Ref.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/jlo/ioe/util/Opt.java" afterPath="$PROJECT_DIR$/src/jlo/ioe/util/Opt.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/jlo/ioe/ObjectService.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/jshiny.iws" afterPath="$PROJECT_DIR$/jshiny.iws" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/jlo/ioe/messaging/Subscriber.java" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/jlo/ioe/util/LazyRef.java" afterPath="$PROJECT_DIR$/src/jlo/ioe/util/LazyRef.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/jlo/ioe/util/Tuple.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/jlo/ioe/data/DataObject.java" afterPath="$PROJECT_DIR$/src/jlo/ioe/data/DataObject.java" />
     </list>
   </component>
   <component name="ChangeListSynchronizer" />
@@ -142,51 +130,88 @@
   <component name="FavoritesManager">
     <favorites_list name="jshiny" />
   </component>
-  <component name="FavoritesProjectViewPane" />
+  <component name="FavoritesProjectViewPane">
+    <subPane subId="jshiny">
+      <PATH>
+        <PATH_ELEMENT>
+          <option name="myItemId" />
+          <option name="myItemType" value="com.intellij.ide.favoritesTreeView.FavoritesTreeNodeDescriptor" />
+        </PATH_ELEMENT>
+      </PATH>
+    </subPane>
+  </component>
   <component name="FileEditorManager">
     <splitter split-orientation="horizontal" split-proportion="0.5007657">
       <split-first>
         <leaf>
-          <file leaf-file-name="SubscriberDelegate.java" pinned="false" current="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/src/jlo/ioe/messaging/SubscriberDelegate.java">
-              <provider selected="true" editor-type-id="text-editor">
-                <state line="20" column="13" selection-start="454" selection-end="454" vertical-scroll-proportion="0.24096386">
-                  <folding>
-                    <element signature="imports" expanded="true" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="DataObject.java" pinned="false" current="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/src/jlo/ioe/data/DataObject.java">
-              <provider selected="true" editor-type-id="text-editor">
-                <state line="69" column="69" selection-start="2286" selection-end="2286" vertical-scroll-proportion="0.72048193">
-                  <folding>
-                    <element signature="imports" expanded="true" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="Ref.java" pinned="false" current="true" current-in-tab="true">
-            <entry file="file://$PROJECT_DIR$/src/jlo/ioe/data/Ref.java">
-              <provider selected="true" editor-type-id="text-editor">
-                <state line="14" column="13" selection-start="285" selection-end="285" vertical-scroll-proportion="0.16568047">
-                  <folding>
-                    <element signature="imports" expanded="true" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
           <file leaf-file-name="LazyRef.java" pinned="false" current="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/src/jlo/ioe/util/LazyRef.java">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="12" column="22" selection-start="289" selection-end="289" vertical-scroll-proportion="0.14201184">
-                  <folding>
-                    <element signature="imports" expanded="true" />
-                  </folding>
+                <state line="11" column="3" selection-start="266" selection-end="266" vertical-scroll-proportion="0.06465517">
+                  <folding />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="ITextComponent.java" pinned="false" current="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/src/jlo/ioe/ui/ITextComponent.java">
+              <provider selected="true" editor-type-id="text-editor">
+                <state line="10" column="17" selection-start="204" selection-end="204" vertical-scroll-proportion="0.07183908">
+                  <folding />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="LayeredPane.java" pinned="false" current="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/src/jlo/ioe/ui/LayeredPane.java">
+              <provider selected="true" editor-type-id="text-editor">
+                <state line="10" column="13" selection-start="194" selection-end="194" vertical-scroll-proportion="0.07183908">
+                  <folding />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="Vocabulary.java" pinned="false" current="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/src/jlo/ioe/data/Vocabulary.java">
+              <provider selected="true" editor-type-id="text-editor">
+                <state line="10" column="13" selection-start="185" selection-end="185" vertical-scroll-proportion="0.07183908">
+                  <folding />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="ObjectService.java" pinned="false" current="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/src/jlo/ioe/data/ObjectService.java">
+              <provider selected="true" editor-type-id="text-editor">
+                <state line="32" column="13" selection-start="866" selection-end="866" vertical-scroll-proportion="0.07262164">
+                  <folding />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="CommandInterface.java" pinned="false" current="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/src/jlo/ioe/data/CommandInterface.java">
+              <provider selected="true" editor-type-id="text-editor">
+                <state line="44" column="13" selection-start="1240" selection-end="1240" vertical-scroll-proportion="-0.57734203">
+                  <folding />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="SheetSelector.java" pinned="false" current="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/src/jlo/ioe/SheetSelector.java">
+              <provider selected="true" editor-type-id="text-editor">
+                <state line="22" column="13" selection-start="513" selection-end="513" vertical-scroll-proportion="0.07262164">
+                  <folding />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="Environment.java" pinned="false" current="true" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/src/jlo/ioe/Environment.java">
+              <provider selected="true" editor-type-id="text-editor">
+                <state line="13" column="13" selection-start="295" selection-end="295" vertical-scroll-proportion="0.07183908">
+                  <folding />
                 </state>
               </provider>
             </entry>
@@ -194,10 +219,8 @@
           <file leaf-file-name="Opt.java" pinned="false" current="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/src/jlo/ioe/util/Opt.java">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="47" column="37" selection-start="1116" selection-end="1116" vertical-scroll-proportion="0.556213">
-                  <folding>
-                    <element signature="imports" expanded="true" />
-                  </folding>
+                <state line="47" column="9" selection-start="1194" selection-end="1194" vertical-scroll-proportion="0.31609195">
+                  <folding />
                 </state>
               </provider>
             </entry>
@@ -205,43 +228,7 @@
           <file leaf-file-name="Void.class" pinned="false" current="false" current-in-tab="false">
             <entry file="jar:///System/Library/Frameworks/JavaVM.framework/Versions/1.5.0/Classes/classes.jar!/java/lang/Void.class">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="5" column="19" selection-start="153" selection-end="153" vertical-scroll-proportion="0.04733728">
-                  <folding />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="ObjectService.java" pinned="false" current="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/src/jlo/ioe/ObjectService.java">
-              <provider selected="true" editor-type-id="text-editor">
-                <state line="14" column="41" selection-start="348" selection-end="348" vertical-scroll-proportion="0.16568047">
-                  <folding />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="Message.java" pinned="false" current="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/src/jlo/ioe/messaging/Message.java">
-              <provider selected="true" editor-type-id="text-editor">
-                <state line="9" column="24" selection-start="201" selection-end="201" vertical-scroll-proportion="0.10650887">
-                  <folding />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="MessageWithParams.java" pinned="false" current="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/src/jlo/ioe/messaging/MessageWithParams.java">
-              <provider selected="true" editor-type-id="text-editor">
-                <state line="9" column="4" selection-start="207" selection-end="207" vertical-scroll-proportion="0.10650887">
-                  <folding />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="AbstractMessage.java" pinned="false" current="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/src/jlo/ioe/messaging/AbstractMessage.java">
-              <provider selected="true" editor-type-id="text-editor">
-                <state line="18" column="0" selection-start="345" selection-end="345" vertical-scroll-proportion="0.21301775">
+                <state line="5" column="19" selection-start="153" selection-end="153" vertical-scroll-proportion="0.03591954">
                   <folding />
                 </state>
               </provider>
@@ -254,7 +241,7 @@
           <file leaf-file-name="DataObject.scala" pinned="false" current="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/../sshiny/src/jlo/ioe/data/DataObject.scala">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="153" column="28" selection-start="4637" selection-end="4637" vertical-scroll-proportion="0.32448035">
+                <state line="153" column="28" selection-start="4773" selection-end="4773" vertical-scroll-proportion="0.3163482">
                   <folding />
                 </state>
               </provider>
@@ -263,10 +250,8 @@
           <file leaf-file-name="MessageService.java" pinned="false" current="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/src/jlo/ioe/messaging/MessageService.java">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="13" column="13" selection-start="250" selection-end="250" vertical-scroll-proportion="0.1475596">
-                  <folding>
-                    <element signature="imports" expanded="true" />
-                  </folding>
+                <state line="13" column="0" selection-start="343" selection-end="343" vertical-scroll-proportion="0.0070771407">
+                  <folding />
                 </state>
               </provider>
             </entry>
@@ -274,7 +259,7 @@
           <file leaf-file-name="Observing.scala" pinned="false" current="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/../sshiny/src/jlo/ioe/ui/Observing.scala">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="-0.055618614">
+                <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
                   <folding />
                 </state>
               </provider>
@@ -321,30 +306,6 @@
           <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageViewProjectNode" />
         </PATH_ELEMENT>
         <PATH_ELEMENT>
-          <option name="myItemId" value="util" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageViewModuleNode" />
-        </PATH_ELEMENT>
-      </PATH>
-      <PATH>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="jshiny.ipr" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageViewProjectNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="util" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageViewModuleNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="mil.army.arl.util" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageElementNode" />
-        </PATH_ELEMENT>
-      </PATH>
-      <PATH>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="jshiny.ipr" />
-          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageViewProjectNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
           <option name="myItemId" value="jshiny" />
           <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageViewModuleNode" />
         </PATH_ELEMENT>
@@ -378,6 +339,24 @@
         </PATH_ELEMENT>
         <PATH_ELEMENT>
           <option name="myItemId" value="util" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageElementNode" />
+        </PATH_ELEMENT>
+      </PATH>
+      <PATH>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="jshiny.ipr" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageViewProjectNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="jshiny" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageViewModuleNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="jlo.ioe" />
+          <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageElementNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="ui" />
           <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageElementNode" />
         </PATH_ELEMENT>
       </PATH>
@@ -644,20 +623,20 @@
       <showLibraryContents />
       <hideEmptyPackages />
       <abbreviatePackageNames />
-      <showStructure ProjectPane="false" Scope="false" PackagesPane="false" />
+      <showStructure Favorites="false" ProjectPane="false" Scope="false" PackagesPane="false" />
       <autoscrollToSource />
       <autoscrollFromSource />
       <sortByType />
     </navigator>
   </component>
   <component name="PropertiesComponent">
-    <property name="MemberChooser.copyJavadoc" value="false" />
-    <property name="GoToClass.includeLibraries" value="false" />
-    <property name="MemberChooser.showClasses" value="true" />
-    <property name="MemberChooser.sorted" value="false" />
     <property name="GoToFile.includeJavaFiles" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../sshiny/src/jlo/ioe/ui" />
     <property name="GoToClass.toSaveIncludeLibraries" value="false" />
+    <property name="MemberChooser.sorted" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../sshiny/src/jlo/ioe/ui" />
+    <property name="MemberChooser.showClasses" value="true" />
+    <property name="GoToClass.includeLibraries" value="false" />
+    <property name="MemberChooser.copyJavadoc" value="false" />
   </component>
   <component name="ReadonlyStatusHandler">
     <option name="SHOW_DIALOG" value="true" />
@@ -669,6 +648,16 @@
   </component>
   <component name="RestoreUpdateTree" />
   <component name="RunManager">
+    <configuration default="true" type="Application" factoryName="Application" enabled="false" merge="false">
+      <option name="MAIN_CLASS_NAME" />
+      <option name="VM_PARAMETERS" />
+      <option name="PROGRAM_PARAMETERS" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <option name="ENABLE_SWING_INSPECTOR" value="false" />
+      <module name="" />
+    </configuration>
     <configuration default="true" type="Applet" factoryName="Applet">
       <module name="" />
       <option name="MAIN_CLASS_NAME" />
@@ -680,6 +669,13 @@
       <option name="VM_PARAMETERS" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" />
+    </configuration>
+    <configuration default="true" type="Remote" factoryName="Remote">
+      <option name="USE_SOCKET_TRANSPORT" value="true" />
+      <option name="SERVER_MODE" value="false" />
+      <option name="SHMEM_ADDRESS" value="javadebug" />
+      <option name="HOST" value="localhost" />
+      <option name="PORT" value="5005" />
     </configuration>
     <configuration default="true" type="JUnit" factoryName="JUnit" enabled="false" merge="false">
       <module name="" />
@@ -699,23 +695,6 @@
       <method>
         <option name="Make" value="true" />
       </method>
-    </configuration>
-    <configuration default="true" type="Remote" factoryName="Remote">
-      <option name="USE_SOCKET_TRANSPORT" value="true" />
-      <option name="SERVER_MODE" value="false" />
-      <option name="SHMEM_ADDRESS" value="javadebug" />
-      <option name="HOST" value="localhost" />
-      <option name="PORT" value="5005" />
-    </configuration>
-    <configuration default="true" type="Application" factoryName="Application" enabled="false" merge="false">
-      <option name="MAIN_CLASS_NAME" />
-      <option name="VM_PARAMETERS" />
-      <option name="PROGRAM_PARAMETERS" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" />
-      <option name="ENABLE_SWING_INSPECTOR" value="false" />
-      <module name="" />
     </configuration>
   </component>
   <component name="ScopeViewComponent">
@@ -776,7 +755,7 @@
     <option name="UPDATE_RUN_STATUS" value="false" />
     <option name="UPDATE_RECURSIVELY" value="true" />
     <option name="MERGE_DRY_RUN" value="false" />
-    <configuration useDefault="true">$PROJECT_DIR$/../../../.subversion</configuration>
+    <configuration useDefault="true">$PROJECT_DIR$/../../../../.subversion</configuration>
     <checkoutURL>https://ec-robocode.googlecode.com/svn/trunk</checkoutURL>
     <checkoutURL>http://svn.apache.org/repos/asf/jakarta/poi/trunk/</checkoutURL>
     <upgradeMode>none</upgradeMode>
@@ -796,34 +775,34 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="4" y="22" width="1676" height="1028" extended-state="6" />
+    <frame x="687" y="22" width="1681" height="1575" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="3" />
-      <window_info id="CVS" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="8" />
-      <window_info id="IDEtalk" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="3" />
-      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="7" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.21669737" order="0" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="1" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" order="1" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.2993421" order="8" />
-      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" order="6" />
-      <window_info id="Module Dependencies" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="3" />
-      <window_info id="Dependency Viewer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="8" />
+      <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="8" />
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="3" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" order="1" />
-      <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="8" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="2" />
-      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" order="2" />
-      <window_info id="File View" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="3" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="1" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" order="4" />
-      <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" order="0" />
       <window_info id="IDEtalk Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="8" />
+      <window_info id="IDEtalk" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="3" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="8" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.2993421" order="8" />
+      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="7" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" order="1" />
+      <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" order="0" />
+      <window_info id="CVS" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="8" />
+      <window_info id="Module Dependencies" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="3" />
+      <window_info id="Dependency Viewer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="8" />
+      <window_info id="File View" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="3" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.21664627" order="0" />
+      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" order="2" />
+      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" order="6" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="2" />
+      <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" order="5" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" order="0" />
       <window_info id="Web" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" order="2" />
       <window_info id="EJB" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" order="3" />
-      <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" order="5" />
     </layout>
   </component>
   <component name="VCS.FileViewConfiguration">
@@ -908,124 +887,108 @@
     <option name="myLastEditedConfigurable" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/jlo/ioe/util/F.java">
+    <entry file="file://$PROJECT_DIR$/src/jlo/ioe/data/DataObject.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="27" column="48" selection-start="897" selection-end="897" vertical-scroll-proportion="0.18313253">
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../../jbam/util/src/mil/army/arl/util/Tuple.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="11" column="22" selection-start="0" selection-end="2582" vertical-scroll-proportion="0.12971698">
+        <state line="69" column="60" selection-start="2205" selection-end="2205" vertical-scroll-proportion="0.38709676">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/jlo/ioe/data/field/Field.java">
+    <entry file="file://$PROJECT_DIR$/src/jlo/ioe/data/Ref.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="17" column="4" selection-start="387" selection-end="387" vertical-scroll-proportion="0.19698726">
+        <state line="14" column="13" selection-start="324" selection-end="324" vertical-scroll-proportion="0.08510638">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/jlo/ioe/util/Tuple.java">
+    <entry file="file://$PROJECT_DIR$/src/jlo/ioe/util/Opt.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="188" column="34" selection-start="3801" selection-end="3801" vertical-scroll-proportion="2.2650602">
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar:///System/Library/Frameworks/JavaVM.framework/Versions/1.5.0/Classes/classes.jar!/java/lang/Void.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="5" column="19" selection-start="153" selection-end="153" vertical-scroll-proportion="0.04733728">
+        <state line="47" column="9" selection-start="1194" selection-end="1194" vertical-scroll-proportion="0.31609195">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/jlo/ioe/ObjectService.java">
+    <entry file="file://$PROJECT_DIR$/../sshiny/src/jlo/ioe/data/DataObject.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="14" column="41" selection-start="348" selection-end="348" vertical-scroll-proportion="0.16568047">
+        <state line="153" column="28" selection-start="4773" selection-end="4773" vertical-scroll-proportion="0.3163482">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../sshiny/src/jlo/ioe/ui/Observing.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/jlo/ioe/messaging/MessageService.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="13" column="13" selection-start="250" selection-end="250" vertical-scroll-proportion="0.1475596">
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/jlo/ioe/messaging/AbstractMessage.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="18" column="0" selection-start="345" selection-end="345" vertical-scroll-proportion="0.21301775">
+        <state line="13" column="0" selection-start="343" selection-end="343" vertical-scroll-proportion="0.0070771407">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/jlo/ioe/messaging/Message.java">
+    <entry file="jar:///System/Library/Frameworks/JavaVM.framework/Versions/1.5.0/Classes/classes.jar!/java/lang/Void.class">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="9" column="24" selection-start="201" selection-end="201" vertical-scroll-proportion="0.10650887">
+        <state line="5" column="19" selection-start="153" selection-end="153" vertical-scroll-proportion="0.03591954">
           <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/jlo/ioe/messaging/MessageWithParams.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="9" column="4" selection-start="207" selection-end="207" vertical-scroll-proportion="0.10650887">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/jlo/ioe/messaging/SubscriberDelegate.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="20" column="13" selection-start="454" selection-end="454" vertical-scroll-proportion="0.24096386">
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/jlo/ioe/util/Opt.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="47" column="37" selection-start="1116" selection-end="1116" vertical-scroll-proportion="0.556213">
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/jlo/ioe/data/DataObject.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="69" column="69" selection-start="2286" selection-end="2286" vertical-scroll-proportion="0.72048193">
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/jlo/ioe/util/LazyRef.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="12" column="22" selection-start="289" selection-end="289" vertical-scroll-proportion="0.14201184">
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
+        <state line="11" column="3" selection-start="266" selection-end="266" vertical-scroll-proportion="0.06465517">
+          <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/jlo/ioe/data/Ref.java">
+    <entry file="file://$PROJECT_DIR$/src/jlo/ioe/ui/ITextComponent.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="14" column="13" selection-start="285" selection-end="285" vertical-scroll-proportion="0.16568047">
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
+        <state line="10" column="17" selection-start="204" selection-end="204" vertical-scroll-proportion="0.07183908">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/jlo/ioe/ui/LayeredPane.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="10" column="13" selection-start="194" selection-end="194" vertical-scroll-proportion="0.07183908">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/jlo/ioe/data/Vocabulary.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="10" column="13" selection-start="185" selection-end="185" vertical-scroll-proportion="0.07183908">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/jlo/ioe/data/ObjectService.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="32" column="13" selection-start="866" selection-end="866" vertical-scroll-proportion="0.07262164">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/jlo/ioe/data/CommandInterface.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="44" column="13" selection-start="1240" selection-end="1240" vertical-scroll-proportion="-0.57734203">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/jlo/ioe/SheetSelector.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="22" column="13" selection-start="513" selection-end="513" vertical-scroll-proportion="0.07262164">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/jlo/ioe/Environment.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="13" column="13" selection-start="295" selection-end="295" vertical-scroll-proportion="0.07183908">
+          <folding />
         </state>
       </provider>
     </entry>

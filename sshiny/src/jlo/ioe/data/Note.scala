@@ -1,6 +1,7 @@
 package jlo.ioe.data
 
 import jlo.ioe.command._
+import java.io.ObjectInput
 
 package command {
   import jlo.ioe.command.Command
@@ -24,10 +25,9 @@ object NoteStorage extends DOStorage[Note] {
 
 // define the note data object
 @serializable
-@SerialVersionUID(1000)
+@SerialVersionUID(1000) // TODO: complain to list that this DOESN'T WORK!
 class Note extends DataObject {
-  val note = new Text(this, "note", "")
-  
+  var note = new Text(this, "note", "")
   var defView : Option[View] = None
   // at the beginning, set the title to be the first set of characters
   listenTo(note) event {
@@ -40,6 +40,12 @@ class Note extends DataObject {
 	meta(DataObjects.kTitle, "Note: " + note.text.substring(0,Math.min(note.text.length,100)))
       }
     }
+  }
+
+  override def readExternal(in:ObjectInput) : Unit = {
+    super.readExternal(in)
+    note = getField("note")
+    printMeta
   }
 
   def storage = NoteStorage
