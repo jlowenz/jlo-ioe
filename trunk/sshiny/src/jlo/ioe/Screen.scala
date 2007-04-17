@@ -24,13 +24,13 @@ object ScreenStateStorage extends data.DOStorage[ScreenState] {
   def db = ssdb
 }
 
-@SerialVersionUID(1000) class ScreenState(var name : String) extends data.DataObject {
+class ScreenState(var name : String) extends data.DataObject {
   var sheets = List[Sheet]()
   var currentSheet : Option[Sheet] = None
 
   def this() = this("")
 
-  val screen = new Screen(this)
+  @transient val screen = new Screen(this)
 
   def storage = ScreenStateStorage
   def kind = "ScreenState"
@@ -43,32 +43,31 @@ object ScreenStateStorage extends data.DOStorage[ScreenState] {
   def makeCurrent(s:Sheet) = { currentSheet = if (s == null) None else Some(s); }
   def getCurrent = currentSheet
 
-  override def writeExternal(out:ObjectOutput) : Unit = {
-    super.writeExternal(out)
-    out.writeUTF(name)
-    out.writeInt(sheets.length)
-    sheets.foreach { e => out.writeObject(e.state) }
-    if (currentSheet.isDefined) { out.writeBoolean(true); out.writeObject(currentSheet.get.state) }
-    else { out.writeBoolean(false) }
-  }
-  override def readExternal(in:ObjectInput) : Unit = {
-    super.readExternal(in)
-    name = in.readUTF
+//   override def writeExternal(out:ObjectOutput) : Unit = {
+//     super.writeExternal(out)
+//     out.writeUTF(name)
+//     out.writeInt(sheets.length)
+//     sheets.foreach { e => out.writeObject(e.state) }
+//     if (currentSheet.isDefined) { out.writeBoolean(true); out.writeObject(currentSheet.get.state) }
+//     else { out.writeBoolean(false) }
+//   }
+//   override def readExternal(in:ObjectInput) : Unit = {
+//     super.readExternal(in)
+//     name = in.readUTF
 
-    val count = in.readInt
-    for (val i <- Iterator.range(0,count)) {
-      Console.println("^^^^^^^^^^^^^^^^^^^^^^^^ reading sheet")
-      sheets = sheets ::: List(new Sheet(screen,in.readObject.asInstanceOf[SheetState]))
-      //screen.display(sheets.head)
-    }
-    val cur_? = in.readBoolean
-    if (cur_?) {
-      val cur = new Sheet(screen,in.readObject.asInstanceOf[SheetState])
-      for (val s <- sheets) {
-	if (s == cur) { currentSheet = Some(s) }
-      }
-    }
-  }
+//     val count = in.readInt
+//     for (val i <- Iterator.range(0,count)) {
+//       Console.println("^^^^^^^^^^^^^^^^^^^^^^^^ reading sheet")
+//       sheets = sheets ::: List(new Sheet(screen,in.readObject.asInstanceOf[SheetState]))
+//     }
+//     val cur_? = in.readBoolean
+//     if (cur_?) {
+//       val cur = new Sheet(screen,in.readObject.asInstanceOf[SheetState])
+//       for (val s <- sheets) {
+// 	if (s == cur) { currentSheet = Some(s) }
+//       }
+//     }
+//   }
 }
 
 // todo: split this out? probably should be in separate file
@@ -161,8 +160,8 @@ class Screen(sstate : ScreenState) extends JFrame() with CommandInterceptor {
     a.defaultView.setPreferredSize(getSize())
     // todo: keep track of the sheets?
     val s = new Sheet(this,a)
-    sheetSelector.newSheet(s)
     sstate.addSheet(s)
+    sheetSelector.newSheet(s)
     display(s)
   }
 

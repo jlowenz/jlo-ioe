@@ -24,6 +24,9 @@
       <pathelement location="lib/swingx-2007_04_01.jar"/>
       <pathelement location="lib/swing-layout.jar"/>
       <pathelement location="lib/je-3.2.21.jar"/>
+      <pathelement location="lib/db4o-6.1-java5.jar"/>
+      <pathelement location="lib/db4o-6.1-nqopt.jar"/>
+      <pathelement location="lib/bloat-1.0.jar"/>      
       <pathelement location="lib/piccolo.jar"/>
       <pathelement location="lib/piccolox.jar"/>
       

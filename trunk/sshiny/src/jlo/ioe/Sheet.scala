@@ -45,15 +45,16 @@ class Sheet(screen:Screen, sstate : SheetState) extends Panel with Observer {
   var splitPane = new Splitter
   setBorder(new EmptyBorder(2,2,2,2))
   add(splitPane)
+  title = obj.meta(data.DataObjects.kTitle).get(obj.kind).asInstanceOf[String]
+  listenTo(obj) event {
+    case data.DataObjectModified(data.MetadataChanged(data.DataObjects.kTitle)) => title = obj.meta(data.DataObjects.kTitle).get("").asInstanceOf[String]
+    case _ => {} 
+  }
   addComponentListener(new ComponentAdapter {
     var firstTime = true
     override def componentShown(e:ComponentEvent) : Unit = {
       if (firstTime) {
 	splitPane.resplit(sstate.splits)
-	listenTo(obj) event {
-	  case data.DataObjectModified(data.MetadataChanged(data.DataObjects.kTitle)) => title = obj.meta(data.DataObjects.kTitle).get("").asInstanceOf[String]
-	  case _ => {} 
-	}
 	firstTime = false
       }
     }

@@ -42,6 +42,8 @@ object Environment {
   screen.preInit
   screen.setVisible(true)
 
+  ObjectManager.customCreations(screen)
+
   // todo: this indirection is here to handle multiple screens
   def newSheet(a:data.DataObject) = screen.newSheet(a)
   def splitSheet(a:data.DataObject) = screen.splitSheet(a)
