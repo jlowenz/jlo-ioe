@@ -29,6 +29,7 @@
       <pathelement location="lib/bloat-1.0.jar"/>      
       <pathelement location="lib/piccolo.jar"/>
       <pathelement location="lib/piccolox.jar"/>
+      <pathelement location="lib/lucene-core-2.1.0.jar"/>
       
       <!--<pathelement location="${your.path}"/>-->
       <pathelement location="${build.dir}"/>
